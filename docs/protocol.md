@@ -1,6 +1,6 @@
 # Protocol
 
-Agents talk to Editor Context Bridge through stdio MCP. The bundled stdio adapter reads newline-delimited JSON-RPC messages from stdin and writes newline-delimited JSON-RPC responses to stdout.
+Agents talk to ContextToAgent through stdio MCP. The bundled stdio adapter reads newline-delimited JSON-RPC messages from stdin and writes newline-delimited JSON-RPC responses to stdout.
 
 The adapter forwards MCP requests to the active editor plugin over plugin-local IPC. The IPC channel uses the same newline-delimited JSON-RPC payloads and is discovered through the registry file written by the editor plugin.
 

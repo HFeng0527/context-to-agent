@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     internal sealed class EditorStateCollector
     {

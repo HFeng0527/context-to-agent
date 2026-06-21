@@ -24,8 +24,8 @@ function readJson(relativePath) {
 }
 
 for (const generatedPath of [
-  "extensions/visualstudio/EditorContextBridge2026/bin",
-  "extensions/visualstudio/EditorContextBridge2026/obj"
+  "extensions/visualstudio/ContextToAgent2026/bin",
+  "extensions/visualstudio/ContextToAgent2026/obj"
 ]) {
   assert(!fs.existsSync(path.join(root, generatedPath)), `${generatedPath} should not be committed or kept as source`);
 }
@@ -42,21 +42,22 @@ assertNotIncludes("package.json", "stage:companion");
 
 const vscodeManifest = readJson("extensions/vscode/package.json");
 const commands = vscodeManifest.contributes.commands.map((command) => command.command);
-assert(commands.includes("editorContextBridge.openSettings"), "VS Code settings command is missing");
-assert(commands.includes("editorContextBridge.configureAgents"), "VS Code configure command is missing");
-assert(commands.includes("editorContextBridge.openDashboard"), "VS Code dashboard command is missing");
-assert(!vscodeManifest.contributes.configuration.properties["editorContextBridge.httpPort"], "VS Code HTTP port setting should be removed");
-assert(vscodeManifest.contributes.configuration.properties["editorContextBridge.language"], "VS Code dashboard language setting is missing");
-assert(vscodeManifest.contributes.configuration.properties["editorContextBridge.configPaths"], "VS Code config path overrides setting is missing");
-assert(!vscodeManifest.contributes.configuration.properties["editorContextBridge.customAgents"], "Custom agents should use Configure Other Agents instructions, not automatic writes");
+assert(commands.includes("contextToAgent.openSettings"), "VS Code settings command is missing");
+assert(commands.includes("contextToAgent.configureAgents"), "VS Code configure command is missing");
+assert(commands.includes("contextToAgent.openDashboard"), "VS Code dashboard command is missing");
+assert(!vscodeManifest.contributes.configuration.properties["contextToAgent.httpPort"], "VS Code HTTP port setting should be removed");
+assert(vscodeManifest.contributes.configuration.properties["contextToAgent.language"], "VS Code dashboard language setting is missing");
+assert(vscodeManifest.contributes.configuration.properties["contextToAgent.configPaths"], "VS Code config path overrides setting is missing");
+assert(!vscodeManifest.contributes.configuration.properties["contextToAgent.customAgents"], "Custom agents should use Configure Other Agents instructions, not automatic writes");
 assert(!vscodeManifest.contributes.views, "VS Code dashboard should not be contributed as a sidebar view");
 
 const vscode = read("extensions/vscode/out/extension.js");
 assert(vscode.includes("net.createServer"), "VS Code extension must host plugin-local IPC");
 assert(vscode.includes("stdioAdapter.js"), "VS Code extension must configure the stdio adapter");
+assert(vscode.includes("context-to-agent-stdio-vscode"), "VS Code extension must create the renamed stdio launcher");
 assert(vscode.includes("createStatusBarItem"), "VS Code extension must expose the dashboard through the status bar");
 assert(vscode.includes("createWebviewPanel"), "VS Code extension must open the dashboard as an editor panel");
-assert(vscode.includes("@ext:local.Editor-context-bridge"), "VS Code settings command must open the native extension settings");
+assert(vscode.includes("@ext:local.context-to-agent"), "VS Code settings command must open the native extension settings");
 assert(vscode.includes("pathOverrides"), "VS Code extension must pass path overrides to agent config");
 assert(vscode.includes("otherAgentSetupSnippets"), "VS Code extension must show Configure Other Agents guidance");
 assert(vscode.includes("Configure Other Agents"), "VS Code dashboard must use Configure Other Agents naming");
@@ -93,28 +94,28 @@ assert(!agentConfig.includes("Claude Desktop / Web"), "Unsupported Claude Deskto
 assert(!agentConfig.includes("backupConfig"), "Agent config must not create config backups before updates");
 assert(!agentConfig.includes("removeLegacyClaudeDesktopServer"), "Agent config must not mutate legacy Claude Desktop preferences");
 
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/EditorStateCollector.cs", "vsBuildErrorLevelHigh");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/EditorStateCollector.cs", ".Take(50)");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/EditorStateCollector.cs", "Object(\"TextDocument\")");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "NamedPipeServerStream");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "JArray batch");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "RecordCall");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "_clientName");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/stdioAdapter.ps1", "NamedPipeClientStream");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/stdioAdapter.ps1", "ClientName");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", ".claude.json");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "Claude-3P");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "ConfigureOtherAgentsText");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "ELECTRON_RUN_AS_NODE");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "[mcp_servers.editor-context.env]");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeSettingsDialog.xaml", "Configure Other Agents");
-assertIncludes("extensions/visualstudio/EditorContextBridge2026/EditorContextBridge2026.csproj", "stdioAdapter.ps1");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "HttpListener");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "/mcp");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "http://127.0.0.1");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "Backup(");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/AgentConfigService.cs", "RemoveLegacyClaudeDesktopServer");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/BridgeClient.cs", "Daemon");
-assertNotIncludes("extensions/visualstudio/EditorContextBridge2026/EditorContextBridge2026.csproj", "bin\\editor-context-bridge.exe");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", "vsBuildErrorLevelHigh");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", ".Take(50)");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", "Object(\"TextDocument\")");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "NamedPipeServerStream");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "JArray batch");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "RecordCall");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "_clientName");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/stdioAdapter.ps1", "NamedPipeClientStream");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/stdioAdapter.ps1", "ClientName");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", ".claude.json");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "Claude-3P");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "ConfigureOtherAgentsText");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "ELECTRON_RUN_AS_NODE");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "[mcp_servers.editor-context.env]");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeSettingsDialog.xaml", "Configure Other Agents");
+assertIncludes("extensions/visualstudio/ContextToAgent2026/ContextToAgent2026.csproj", "stdioAdapter.ps1");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "HttpListener");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "/mcp");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "http://127.0.0.1");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "Backup(");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "RemoveLegacyClaudeDesktopServer");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "Daemon");
+assertNotIncludes("extensions/visualstudio/ContextToAgent2026/ContextToAgent2026.csproj", "bin\\context-to-agent.exe");
 
 console.log("Project verification passed.");

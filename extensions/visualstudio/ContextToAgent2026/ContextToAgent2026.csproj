@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <UseWPF>true</UseWPF>
-    <RootNamespace>EditorContextBridge2026</RootNamespace>
-    <AssemblyName>EditorContextBridge2026</AssemblyName>
+    <RootNamespace>ContextToAgent2026</RootNamespace>
+    <AssemblyName>ContextToAgent2026</AssemblyName>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
   </PropertyGroup>
@@ -18,6 +18,6 @@
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <VSCTCompile Include="EditorContextBridgePackage.vsct" />
+    <VSCTCompile Include="ContextToAgentPackage.vsct" />
   </ItemGroup>
 </Project>

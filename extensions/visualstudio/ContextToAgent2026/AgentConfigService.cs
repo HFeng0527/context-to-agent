@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     internal sealed class AgentConfigService
     {
         private const string ServerName = "editor-context";
-        private const string OwnedMarker = "editor-context-bridge managed stdio";
+        private const string OwnedMarker = "context-to-agent managed stdio";
 
         public IReadOnlyList<AgentStatus> Statuses(BridgeClient bridgeClient)
         {

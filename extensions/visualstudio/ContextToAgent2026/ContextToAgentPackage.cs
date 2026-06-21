@@ -6,14 +6,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Task = System.Threading.Tasks.Task;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
-    public sealed class EditorContextBridgePackage : AsyncPackage
+    public sealed class ContextToAgentPackage : AsyncPackage
     {
         public const string PackageGuidString = "cfd2b31d-7820-4015-b91f-f1b36f6d926f";
         private DTE2 _dte;

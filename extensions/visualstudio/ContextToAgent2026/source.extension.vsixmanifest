@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="EditorContextBridge2026" Version="0.1.0" Language="en-US" Publisher="local" />
-    <DisplayName>Editor Context Bridge 2026</DisplayName>
+    <Identity Id="ContextToAgent2026" Version="0.1.0" Language="en-US" Publisher="local" />
+    <DisplayName>ContextToAgent 2026</DisplayName>
     <Description xml:space="preserve">Lightweight MCP editor context bridge for Visual Studio 2026 preview.</Description>
     <Tags>mcp;ai;context</Tags>
   </Metadata>
@@ -12,7 +12,7 @@
     <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[18.0,19.0)" />
   </Installation>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="EditorContextBridge2026" Path="|EditorContextBridge2026|" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ContextToAgent2026" Path="|ContextToAgent2026|" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011" />
   </Assets>
 </PackageManifest>
 

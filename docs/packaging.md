@@ -9,7 +9,7 @@ From `extensions/vscode`:
 ```sh
 npm install -g @vscode/vsce
 vsce package
-code --install-extension editor-context-bridge-0.1.0.vsix
+code --install-extension context-to-agent-0.1.0.vsix
 ```
 
 The VS Code extension is JavaScript and runs cross-platform as long as the target VS Code version supports the extension API.
@@ -19,7 +19,7 @@ The VS Code extension is JavaScript and runs cross-platform as long as the targe
 Build the VSIX on Windows with Visual Studio SDK workloads installed:
 
 ```powershell
-msbuild extensions\visualstudio\EditorContextBridge2026\EditorContextBridge2026.csproj /p:Configuration=Release
+msbuild extensions\visualstudio\ContextToAgent2026\ContextToAgent2026.csproj /p:Configuration=Release
 ```
 
 Install the generated VSIX from the project output directory.

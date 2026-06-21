@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://editor-context-bridge.local/schemas/editor-instance-update.schema.json",
-  "title": "Editor Context Bridge Instance Update",
+  "$id": "https://context-to-agent.local/schemas/editor-instance-update.schema.json",
+  "title": "ContextToAgent Instance Update",
   "type": "object",
   "required": ["source", "displayName", "workspaceRoots"],
   "additionalProperties": false,

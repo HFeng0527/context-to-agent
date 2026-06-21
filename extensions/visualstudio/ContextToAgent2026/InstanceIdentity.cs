@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     internal static class InstanceIdentity
     {
         public static string GetOrCreate()
         {
-            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EditorContextBridge");
+            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextToAgent");
             Directory.CreateDirectory(directory);
             var file = Path.Combine(directory, "visualstudio-instance-id.txt");
             if (File.Exists(file))

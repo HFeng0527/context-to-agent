@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel.Design;
 using Task = System.Threading.Tasks.Task;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     internal sealed class BridgeSettingsCommand
     {

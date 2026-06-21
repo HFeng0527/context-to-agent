@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const agentConfig = require("./agentConfig");
 
 const SERVER_NAME = "editor-context";
-const SETTINGS_FILTER = "@ext:local.Editor-context-bridge";
+const SETTINGS_FILTER = "@ext:local.context-to-agent";
 const LANGUAGE_SETTING = "language";
 
 let instanceId;
@@ -29,12 +29,12 @@ async function activate(context) {
   }
 
   statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  statusBarItem.command = "editorContextBridge.openDashboard";
+  statusBarItem.command = "contextToAgent.openDashboard";
   context.subscriptions.push(
     statusBarItem,
-    vscode.commands.registerCommand("editorContextBridge.openSettings", () => openNativeSettings()),
-    vscode.commands.registerCommand("editorContextBridge.configureAgents", () => openDashboard()),
-    vscode.commands.registerCommand("editorContextBridge.openDashboard", () => openDashboard())
+    vscode.commands.registerCommand("contextToAgent.openSettings", () => openNativeSettings()),
+    vscode.commands.registerCommand("contextToAgent.configureAgents", () => openDashboard()),
+    vscode.commands.registerCommand("contextToAgent.openDashboard", () => openDashboard())
   );
   context.subscriptions.push(vscode.window.onDidChangeWindowState((state) => {
     if (state.focused) markActiveAndScheduleRefresh();
@@ -43,7 +43,7 @@ async function activate(context) {
   context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(() => markActiveAndScheduleRefresh()));
   context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(() => scheduleRefresh()));
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async (event) => {
-    if (event.affectsConfiguration("editorContextBridge")) {
+    if (event.affectsConfiguration("contextToAgent")) {
       updateStatusBar();
       await refreshDashboard();
     }
@@ -73,7 +73,7 @@ function scheduleRefresh() {
     try {
       collectEditorState();
     } catch (error) {
-      console.error("Editor Context Bridge refresh failed", error);
+      console.error("ContextToAgent refresh failed", error);
     }
   }, 300);
 }
@@ -95,7 +95,7 @@ async function ensureIpcServer() {
 
 function handleIpcSocket(socket) {
   let buffer = "";
-  const request = { connectionId: crypto.randomUUID(), headers: { "user-agent": "editor-context-stdio-adapter" } };
+  const request = { connectionId: crypto.randomUUID(), headers: { "user-agent": "context-to-agent-stdio-adapter" } };
   socket.setEncoding("utf8");
   socket.on("data", (chunk) => {
     buffer += chunk;
@@ -315,9 +315,9 @@ function bridgePayload() {
 }
 
 function bridgeDataDir() {
-  if (process.platform === "win32") return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "editor-context-bridge");
-  if (process.platform === "darwin") return path.join(os.homedir(), "Library", "Application Support", "editor-context-bridge");
-  return path.join(process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"), "editor-context-bridge");
+  if (process.platform === "win32") return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "context-to-agent");
+  if (process.platform === "darwin") return path.join(os.homedir(), "Library", "Application Support", "context-to-agent");
+  return path.join(process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"), "context-to-agent");
 }
 
 function registryPath() {
@@ -326,8 +326,8 @@ function registryPath() {
 
 function ipcPath() {
   const id = crypto.createHash("sha256").update(os.homedir()).digest("hex").slice(0, 12);
-  if (process.platform === "win32") return `\\\\.\\pipe\\editor-context-bridge-${id}`;
-  return path.join(os.tmpdir(), `editor-context-bridge-${id}.sock`);
+  if (process.platform === "win32") return `\\\\.\\pipe\\context-to-agent-${id}`;
+  return path.join(os.tmpdir(), `context-to-agent-${id}.sock`);
 }
 
 function writeRegistry() {
@@ -395,8 +395,8 @@ async function openDashboard() {
     return;
   }
   dashboardPanel = vscode.window.createWebviewPanel(
-    "editorContextBridgeDashboard",
-    "Editor Context Bridge",
+    "contextToAgentDashboard",
+    "ContextToAgent",
     vscode.ViewColumn.One,
     { enableScripts: true, retainContextWhenHidden: true }
   );
@@ -405,7 +405,7 @@ async function openDashboard() {
   });
   dashboardPanel.webview.onDidReceiveMessage((message) => {
     handleDashboardMessage(message).catch((error) => {
-      vscode.window.showErrorMessage(`Editor Context Bridge: ${error.message}`);
+      vscode.window.showErrorMessage(`ContextToAgent: ${error.message}`);
     });
   });
   await refreshDashboard();
@@ -445,12 +445,12 @@ function updateStatusBar() {
   const t = uiStrings(resolveLanguage());
   const running = Boolean(ipcServer && ipcEndpoint);
   statusBarItem.text = running ? `$(plug) ${t.statusBarRunning}` : `$(circle-slash) ${t.statusBarStopped}`;
-  statusBarItem.tooltip = running ? `${t.bridge}: ${ipcEndpoint}` : "Editor Context Bridge";
+  statusBarItem.tooltip = running ? `${t.bridge}: ${ipcEndpoint}` : "ContextToAgent";
   statusBarItem.show();
 }
 
 function configuredLanguageMode() {
-  const value = vscode.workspace.getConfiguration("editorContextBridge").get(LANGUAGE_SETTING);
+  const value = vscode.workspace.getConfiguration("contextToAgent").get(LANGUAGE_SETTING);
   return ["auto", "en", "zh-CN"].includes(value) ? value : "auto";
 }
 
@@ -461,7 +461,7 @@ function resolveLanguage(mode = configuredLanguageMode()) {
 
 async function setDashboardLanguage(language) {
   if (!["auto", "en", "zh-CN"].includes(language)) return;
-  await vscode.workspace.getConfiguration("editorContextBridge").update(LANGUAGE_SETTING, language, vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration("contextToAgent").update(LANGUAGE_SETTING, language, vscode.ConfigurationTarget.Global);
 }
 
 function stdioCommandSpec() {
@@ -470,8 +470,8 @@ function stdioCommandSpec() {
 
 function launcherCommandSpec() {
   const launcherPath = process.platform === "win32"
-    ? path.join(bridgeDataDir(), "editor-context-stdio-vscode.cmd")
-    : path.join(bridgeDataDir(), "editor-context-stdio-vscode");
+    ? path.join(bridgeDataDir(), "context-to-agent-stdio-vscode.cmd")
+    : path.join(bridgeDataDir(), "context-to-agent-stdio-vscode");
   const adapterPath = extensionContext
     ? path.join(extensionContext.extensionPath, "out", "stdioAdapter.js")
     : path.join(__dirname, "stdioAdapter.js");
@@ -813,7 +813,7 @@ function dashboardHtml(model) {
   <main class="page">
     <div class="top">
       <div class="titlebar">
-        <h1>Editor Context Bridge</h1>
+        <h1>ContextToAgent</h1>
         <span class="status"><span class="dot ${model.bridgeRunning ? "" : "off"}"></span>${escapeHtml(model.bridgeRunning ? t.running : t.stopped)}</span>
       </div>
       <div class="segment" aria-label="${escapeHtml(t.language)}">${languageButtons}</div>
@@ -963,7 +963,7 @@ const UI_STRINGS = {
     configure: "Configure",
     configureAll: "Configure all",
     configured: "Configured",
-    configurePrompt: "Editor Context Bridge will update these stdio MCP configs:",
+    configurePrompt: "ContextToAgent will update these stdio MCP configs:",
     copy: "Copy",
     bridge: "Stdio bridge",
     commandCopied: "Stdio command copied.",
@@ -1009,7 +1009,7 @@ const UI_STRINGS = {
     statusBarRunning: "Editor Context: Running",
     statusBarStopped: "Editor Context: Stopped",
     confirm: "Confirm",
-    updated: "Editor Context Bridge MCP configuration updated."
+    updated: "ContextToAgent MCP configuration updated."
   },
   "zh-CN": {
     agents: "Agent MCP",
@@ -1017,7 +1017,7 @@ const UI_STRINGS = {
     configure: "配置",
     configureAll: "全部配置",
     configured: "已配置",
-    configurePrompt: "Editor Context Bridge 将更新这些 stdio MCP 配置：",
+    configurePrompt: "ContextToAgent 将更新这些 stdio MCP 配置：",
     copy: "复制",
     bridge: "Stdio 桥接",
     commandCopied: "Stdio 命令已复制。",
@@ -1063,7 +1063,7 @@ const UI_STRINGS = {
     statusBarRunning: "编辑器上下文：运行中",
     statusBarStopped: "编辑器上下文：已停止",
     confirm: "确认",
-    updated: "Editor Context Bridge MCP 配置已更新。"
+    updated: "ContextToAgent MCP 配置已更新。"
   }
 };
 
@@ -1071,7 +1071,7 @@ async function agentDefinitions() {
   const home = os.homedir();
   const appData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
   const configHome = process.env.XDG_CONFIG_HOME || path.join(home, ".config");
-  const settings = vscode.workspace.getConfiguration("editorContextBridge");
+  const settings = vscode.workspace.getConfiguration("contextToAgent");
   return agentConfig.agentDefinitions({
     home,
     appData,

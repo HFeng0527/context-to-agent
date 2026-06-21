@@ -1,5 +1,5 @@
 {
-  "name": "editor-context-bridge-workspace",
+  "name": "context-to-agent-workspace",
   "private": true,
   "version": "0.1.0",
   "scripts": {

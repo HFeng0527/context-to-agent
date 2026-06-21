@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EditorContextBridge2026
+namespace ContextToAgent2026
 {
     internal sealed class BridgeClient : IDisposable
     {
@@ -24,7 +24,7 @@ namespace EditorContextBridge2026
         public BridgeClient(string instanceId)
         {
             _instanceId = instanceId;
-            _pipeName = "editor-context-bridge-" + instanceId;
+            _pipeName = "context-to-agent-" + instanceId;
         }
 
         public string PipeName => _pipeName;

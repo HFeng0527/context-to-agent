@@ -1,6 +1,6 @@
 {
-  "name": "Editor-context-bridge",
-  "displayName": "Editor Context Bridge",
+  "name": "context-to-agent",
+  "displayName": "ContextToAgent",
   "description": "Lightweight MCP bridge for sharing current editor context with desktop agents.",
   "version": "0.1.0",
   "publisher": "local",
@@ -10,30 +10,30 @@
   "categories": ["Other"],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:editorContextBridge.openSettings",
-    "onCommand:editorContextBridge.configureAgents",
-    "onCommand:editorContextBridge.openDashboard"
+    "onCommand:contextToAgent.openSettings",
+    "onCommand:contextToAgent.configureAgents",
+    "onCommand:contextToAgent.openDashboard"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "editorContextBridge.openSettings",
-        "title": "Editor Context Bridge: Open VS Code Settings"
+        "command": "contextToAgent.openSettings",
+        "title": "ContextToAgent: Open VS Code Settings"
       },
       {
-        "command": "editorContextBridge.configureAgents",
-        "title": "Editor Context Bridge: Open Dashboard"
+        "command": "contextToAgent.configureAgents",
+        "title": "ContextToAgent: Open Dashboard"
       },
       {
-        "command": "editorContextBridge.openDashboard",
-        "title": "Editor Context Bridge: Open Dashboard"
+        "command": "contextToAgent.openDashboard",
+        "title": "ContextToAgent: Open Dashboard"
       }
     ],
     "configuration": {
-      "title": "Editor Context Bridge",
+      "title": "ContextToAgent",
       "properties": {
-        "editorContextBridge.language": {
+        "contextToAgent.language": {
           "type": "string",
           "default": "auto",
           "enum": ["auto", "en", "zh-CN"],
@@ -42,9 +42,9 @@
             "Use English.",
             "使用中文。"
           ],
-          "description": "Display language for the Editor Context Bridge dashboard."
+          "description": "Display language for the ContextToAgent dashboard."
         },
-        "editorContextBridge.configPaths": {
+        "contextToAgent.configPaths": {
           "type": "object",
           "default": {},
           "additionalProperties": false,

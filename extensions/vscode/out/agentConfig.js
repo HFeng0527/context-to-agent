@@ -3,7 +3,7 @@ const os = require("os");
 const path = require("path");
 
 const SERVER_NAME = "editor-context";
-const OWNED_MARKER = "editor-context-bridge managed stdio";
+const OWNED_MARKER = "context-to-agent managed stdio";
 
 function defaultEnv(env) {
   const home = os.homedir();

@@ -14,9 +14,9 @@ function cliValue(name) {
 }
 
 function bridgeDataDir() {
-  if (process.platform === "win32") return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "editor-context-bridge");
-  if (process.platform === "darwin") return path.join(os.homedir(), "Library", "Application Support", "editor-context-bridge");
-  return path.join(process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"), "editor-context-bridge");
+  if (process.platform === "win32") return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "context-to-agent");
+  if (process.platform === "darwin") return path.join(os.homedir(), "Library", "Application Support", "context-to-agent");
+  return path.join(process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"), "context-to-agent");
 }
 
 function registryPath() {
@@ -25,8 +25,8 @@ function registryPath() {
 
 function fallbackIpcPath() {
   const id = crypto.createHash("sha256").update(os.homedir()).digest("hex").slice(0, 12);
-  if (process.platform === "win32") return `\\\\.\\pipe\\editor-context-bridge-${id}`;
-  return path.join(os.tmpdir(), `editor-context-bridge-${id}.sock`);
+  if (process.platform === "win32") return `\\\\.\\pipe\\context-to-agent-${id}`;
+  return path.join(os.tmpdir(), `context-to-agent-${id}.sock`);
 }
 
 function ipcEndpoint() {
@@ -43,7 +43,7 @@ function requestExtension(line, expectResponse) {
     let buffer = "";
     const timer = setTimeout(() => {
       socket.destroy();
-      reject(new Error("Editor Context Bridge timed out. Open VS Code and ensure the extension is running."));
+      reject(new Error("ContextToAgent timed out. Open VS Code and ensure the extension is running."));
     }, REQUEST_TIMEOUT_MS);
 
     socket.setEncoding("utf8");
@@ -66,12 +66,12 @@ function requestExtension(line, expectResponse) {
     });
     socket.on("error", (error) => {
       clearTimeout(timer);
-      reject(new Error(`Editor Context Bridge is not available: ${error.message}`));
+      reject(new Error(`ContextToAgent is not available: ${error.message}`));
     });
     socket.on("close", () => {
       if (expectResponse && !buffer) {
         clearTimeout(timer);
-        reject(new Error("Editor Context Bridge closed the IPC connection without a response."));
+        reject(new Error("ContextToAgent closed the IPC connection without a response."));
       }
     });
   });
@@ -116,7 +116,7 @@ process.stdin.on("data", (chunk) => {
     stdinBuffer = stdinBuffer.slice(newline + 1);
     if (!line) continue;
     handleLine(line).catch((error) => {
-      process.stderr.write(`Editor Context Bridge stdio adapter failed: ${error.message}\n`);
+      process.stderr.write(`ContextToAgent stdio adapter failed: ${error.message}\n`);
     });
   }
 });

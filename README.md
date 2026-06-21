@@ -1,6 +1,6 @@
-# Editor Context Bridge
+# ContextToAgent
 
-Editor Context Bridge is a lightweight stdio MCP bridge that lets agents read the current editor context from VS Code and Visual Studio 2026.
+ContextToAgent is a lightweight stdio MCP bridge that lets agents read the current editor context from VS Code and Visual Studio 2026.
 
 ## v1 Scope
 
@@ -34,9 +34,9 @@ There is no shared daemon and no user-managed background process.
 
 Agent configuration is stdio-only. Codex, OpenCode, Claude Code CLI, and Claude Desktop are configured as user-global targets; Claude Code CLI uses `~/.claude.json`.
 
-Built-in config paths can be overridden with `editorContextBridge.configPaths`. For agents that are not built in, use the dashboard's Configure Other Agents guide and paste the stdio MCP config into that agent's own MCP settings. The guide also calls out common env and schema pitfalls such as `ELECTRON_RUN_AS_NODE`, JSON `env` objects, Codex TOML env tables, and clients that omit or require `type = "stdio"`.
+Built-in config paths can be overridden with `contextToAgent.configPaths`. For agents that are not built in, use the dashboard's Configure Other Agents guide and paste the stdio MCP config into that agent's own MCP settings. The guide also calls out common env and schema pitfalls such as `ELECTRON_RUN_AS_NODE`, JSON `env` objects, Codex TOML env tables, and clients that omit or require `type = "stdio"`.
 
-On macOS and Windows the Claude Desktop default path checks `Claude-3P` before `Claude`; set `editorContextBridge.configPaths.claudeDesktop` when you want an exact path. Linux only shows Claude Desktop when a path override is provided.
+On macOS and Windows the Claude Desktop default path checks `Claude-3P` before `Claude`; set `contextToAgent.configPaths.claudeDesktop` when you want an exact path. Linux only shows Claude Desktop when a path override is provided.
 
 ## Repository Layout
 

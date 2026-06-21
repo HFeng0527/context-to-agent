@@ -5,7 +5,7 @@ const path = require("path");
 const agentConfig = require("../out/agentConfig");
 
 function tempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "editor-context-bridge-test-"));
+  return fs.mkdtempSync(path.join(os.tmpdir(), "context-to-agent-test-"));
 }
 
 function fixedDate() {
@@ -20,13 +20,13 @@ function testMcpJsonConfigureAndRevoke() {
   const dir = tempDir();
   const file = path.join(dir, "mcp-config.json");
   fs.writeFileSync(file, JSON.stringify({ mcpServers: { existing: { command: "existing-tool" } } }, null, 2));
-  const agent = { kind: "mcp-json", configPath: file, command: "/bin/editor-context-stdio", args: ["adapter.js", "--client-name", "Test Agent"], env: { ELECTRON_RUN_AS_NODE: "1" } };
+  const agent = { kind: "mcp-json", configPath: file, command: "/bin/context-to-agent-stdio", args: ["adapter.js", "--client-name", "Test Agent"], env: { ELECTRON_RUN_AS_NODE: "1" } };
 
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
   assert.strictEqual(configured.mcpServers.existing.command, "existing-tool");
   assert.strictEqual(configured.mcpServers["editor-context"].type, "stdio");
-  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/editor-context-stdio");
+  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/context-to-agent-stdio");
   assert.deepStrictEqual(configured.mcpServers["editor-context"].args, ["adapter.js", "--client-name", "Test Agent"]);
   assert.strictEqual(configured.mcpServers["editor-context"].env.ELECTRON_RUN_AS_NODE, "1");
   assert(!fs.existsSync(`${file}.2026-06-20T00-00-00-000Z.bak`));
@@ -49,7 +49,7 @@ function testClaudeDesktopConfigureAndRevoke() {
     },
     mcpServers: { existing: { command: "existing-tool" } }
   }, null, 2));
-  const agent = { kind: "claude-desktop-json", configPath: file, command: "/bin/editor-context-stdio", args: ["adapter.js", "--client-name", "Claude Desktop"], env: { ELECTRON_RUN_AS_NODE: "1" } };
+  const agent = { kind: "claude-desktop-json", configPath: file, command: "/bin/context-to-agent-stdio", args: ["adapter.js", "--client-name", "Claude Desktop"], env: { ELECTRON_RUN_AS_NODE: "1" } };
 
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
@@ -57,7 +57,7 @@ function testClaudeDesktopConfigureAndRevoke() {
   assert.strictEqual(configured.preferences.mcpServers["editor-context"].type, "streamable-http");
   assert.strictEqual(configured.mcpServers.existing.command, "existing-tool");
   assert(!("type" in configured.mcpServers["editor-context"]));
-  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/editor-context-stdio");
+  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/context-to-agent-stdio");
   assert.deepStrictEqual(configured.mcpServers["editor-context"].args, ["adapter.js", "--client-name", "Claude Desktop"]);
 
   agentConfig.revokeAgent(agent, fixedDate());
@@ -70,13 +70,13 @@ function testOpenCodeConfigureAndRevoke() {
   const dir = tempDir();
   const file = path.join(dir, "opencode.json");
   fs.writeFileSync(file, JSON.stringify({ mcp: { existing: { type: "local", command: ["tool"] } } }, null, 2));
-  const agent = { kind: "opencode-json", configPath: file, command: "/bin/editor-context-stdio", args: ["adapter.js", "--client-name", "OpenCode"], env: { ELECTRON_RUN_AS_NODE: "1" } };
+  const agent = { kind: "opencode-json", configPath: file, command: "/bin/context-to-agent-stdio", args: ["adapter.js", "--client-name", "OpenCode"], env: { ELECTRON_RUN_AS_NODE: "1" } };
 
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
   assert.strictEqual(configured.mcp.existing.type, "local");
   assert.strictEqual(configured.mcp["editor-context"].type, "local");
-  assert.deepStrictEqual(configured.mcp["editor-context"].command, ["/bin/editor-context-stdio", "adapter.js", "--client-name", "OpenCode"]);
+  assert.deepStrictEqual(configured.mcp["editor-context"].command, ["/bin/context-to-agent-stdio", "adapter.js", "--client-name", "OpenCode"]);
   assert.strictEqual(configured.mcp["editor-context"].enabled, true);
 
   agentConfig.revokeAgent(agent, fixedDate());
@@ -92,7 +92,7 @@ function testCodexTomlConfigureAndRevoke() {
     "[mcp_servers.keep]",
     "command = \"keep\"",
     "",
-    "# editor-context-bridge managed stdio",
+    "# context-to-agent managed stdio",
     "[mcp_servers.editor-context]",
     "command = \"/old/adapter\"",
     "[mcp_servers.editor-context.env]",
@@ -103,13 +103,13 @@ function testCodexTomlConfigureAndRevoke() {
     ""
   ].join("\n"));
 
-  const agent = { kind: "codex-toml", configPath: file, command: "/bin/editor-context-stdio", args: ["adapter.js", "--client-name", "Codex"], env: { ELECTRON_RUN_AS_NODE: "1" } };
+  const agent = { kind: "codex-toml", configPath: file, command: "/bin/context-to-agent-stdio", args: ["adapter.js", "--client-name", "Codex"], env: { ELECTRON_RUN_AS_NODE: "1" } };
   agentConfig.configureAgent(agent, fixedDate());
   const configured = read(file);
   assert(configured.includes("[mcp_servers.keep]"));
   assert(configured.includes("[theme]"));
   assert(configured.includes("[mcp_servers.editor-context]"));
-  assert(configured.includes('command = "/bin/editor-context-stdio"'));
+  assert(configured.includes('command = "/bin/context-to-agent-stdio"'));
   assert(configured.includes('args = ["adapter.js", "--client-name", "Codex"]'));
   assert(configured.includes("[mcp_servers.editor-context.env]"));
   assert(!configured.includes("/old/adapter"));
