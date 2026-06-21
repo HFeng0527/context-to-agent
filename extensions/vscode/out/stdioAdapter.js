@@ -43,7 +43,7 @@ function requestExtension(line, expectResponse) {
     let buffer = "";
     const timer = setTimeout(() => {
       socket.destroy();
-      reject(new Error("ContextToAgent timed out. Open VS Code and ensure the extension is running."));
+      reject(new Error("Context To Agent timed out. Open VS Code and ensure the extension is running."));
     }, REQUEST_TIMEOUT_MS);
 
     socket.setEncoding("utf8");
@@ -66,12 +66,12 @@ function requestExtension(line, expectResponse) {
     });
     socket.on("error", (error) => {
       clearTimeout(timer);
-      reject(new Error(`ContextToAgent is not available: ${error.message}`));
+      reject(new Error(`Context To Agent is not available: ${error.message}`));
     });
     socket.on("close", () => {
       if (expectResponse && !buffer) {
         clearTimeout(timer);
-        reject(new Error("ContextToAgent closed the IPC connection without a response."));
+        reject(new Error("Context To Agent closed the IPC connection without a response."));
       }
     });
   });
@@ -116,7 +116,7 @@ process.stdin.on("data", (chunk) => {
     stdinBuffer = stdinBuffer.slice(newline + 1);
     if (!line) continue;
     handleLine(line).catch((error) => {
-      process.stderr.write(`ContextToAgent stdio adapter failed: ${error.message}\n`);
+      process.stderr.write(`Context To Agent stdio adapter failed: ${error.message}\n`);
     });
   }
 });

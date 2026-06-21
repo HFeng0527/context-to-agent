@@ -11,7 +11,7 @@
     <Buttons>
       <Button guid="guidContextToAgentCommandSet" id="OpenSettingsCommand" priority="0x0100" type="Button">
         <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentGroup" />
-        <Strings><ButtonText>ContextToAgent Settings</ButtonText></Strings>
+        <Strings><ButtonText>Context To Agent Settings</ButtonText></Strings>
       </Button>
     </Buttons>
   </Commands>
@@ -23,4 +23,3 @@
     </GuidSymbol>
   </Symbols>
 </CommandTable>
-

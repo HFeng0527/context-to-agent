@@ -7,8 +7,8 @@ npm run verify
 Manual checks:
 
 - Open VS Code with the extension loaded.
-- Confirm the status bar shows ContextToAgent status.
-- Open the ContextToAgent dashboard from the status bar or command palette.
+- Confirm the status bar shows Context To Agent status.
+- Open the Context To Agent dashboard from the status bar or command palette.
 - Switch the dashboard language between English and Chinese.
 - Configure Codex, OpenCode, Claude Code CLI, or Claude Desktop MCP through the dashboard.
 - Confirm the native VS Code settings command opens `@ext:local.context-to-agent`.

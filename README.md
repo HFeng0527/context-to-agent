@@ -1,6 +1,6 @@
-# ContextToAgent
+# Context To Agent
 
-ContextToAgent is a lightweight stdio MCP bridge that lets agents read the current editor context from VS Code and Visual Studio 2026.
+Context To Agent is a lightweight stdio MCP bridge that lets agents read the current editor context from VS Code and Visual Studio 2026.
 
 ## v1 Scope
 

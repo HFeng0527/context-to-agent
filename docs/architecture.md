@@ -1,6 +1,6 @@
 # Architecture
 
-ContextToAgent uses stdio MCP as the only agent-facing transport. Editor plugins expose editor state through a plugin-local IPC socket/pipe while the editor is open.
+Context To Agent uses stdio MCP as the only agent-facing transport. Editor plugins expose editor state through a plugin-local IPC socket/pipe while the editor is open.
 
 ## Components
 

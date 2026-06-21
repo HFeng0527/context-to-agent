@@ -26,9 +26,9 @@ namespace ContextToAgent2026
         }
 
         private void StartBridge_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { await _bridgeClient.EnsureIpcAsync(); await RefreshAsync(); });
-        private void ConfigureAll_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { if (MessageBox.Show("Update supported stdio MCP configs?", "ContextToAgent", MessageBoxButton.OKCancel) == MessageBoxResult.OK) { _agentConfigService.ConfigureAll(_bridgeClient); await RefreshAsync(); } });
-        private void RevokeAll_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { if (MessageBox.Show("Remove editor-context from managed MCP configs?", "ContextToAgent", MessageBoxButton.OKCancel) == MessageBoxResult.OK) { _agentConfigService.RevokeAll(_bridgeClient); await RefreshAsync(); } });
-        private void ConfigureOtherAgents_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { var text = _agentConfigService.ConfigureOtherAgentsText(_bridgeClient); Clipboard.SetText(text); MessageBox.Show(text + Environment.NewLine + Environment.NewLine + "Other agents configuration guide copied to clipboard.", "ContextToAgent", MessageBoxButton.OK, MessageBoxImage.Information); await RefreshAsync(); });
+        private void ConfigureAll_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { if (MessageBox.Show("Update supported stdio MCP configs?", "Context To Agent", MessageBoxButton.OKCancel) == MessageBoxResult.OK) { _agentConfigService.ConfigureAll(_bridgeClient); await RefreshAsync(); } });
+        private void RevokeAll_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { if (MessageBox.Show("Remove editor-context from managed MCP configs?", "Context To Agent", MessageBoxButton.OKCancel) == MessageBoxResult.OK) { _agentConfigService.RevokeAll(_bridgeClient); await RefreshAsync(); } });
+        private void ConfigureOtherAgents_Click(object sender, RoutedEventArgs e) => _ = RunUiActionAsync(async () => { var text = _agentConfigService.ConfigureOtherAgentsText(_bridgeClient); Clipboard.SetText(text); MessageBox.Show(text + Environment.NewLine + Environment.NewLine + "Other agents configuration guide copied to clipboard.", "Context To Agent", MessageBoxButton.OK, MessageBoxImage.Information); await RefreshAsync(); });
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
         private async Task RunUiActionAsync(Func<Task> action)
@@ -39,7 +39,7 @@ namespace ContextToAgent2026
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.Message, "ContextToAgent", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(error.Message, "Context To Agent", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
