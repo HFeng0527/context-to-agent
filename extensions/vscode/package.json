@@ -1,0 +1,78 @@
+{
+  "name": "Editor-context-bridge",
+  "displayName": "Editor Context Bridge",
+  "description": "Lightweight MCP bridge for sharing current editor context with desktop agents.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:editorContextBridge.openSettings",
+    "onCommand:editorContextBridge.configureAgents",
+    "onCommand:editorContextBridge.openDashboard"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "editorContextBridge.openSettings",
+        "title": "Editor Context Bridge: Open VS Code Settings"
+      },
+      {
+        "command": "editorContextBridge.configureAgents",
+        "title": "Editor Context Bridge: Open Dashboard"
+      },
+      {
+        "command": "editorContextBridge.openDashboard",
+        "title": "Editor Context Bridge: Open Dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "Editor Context Bridge",
+      "properties": {
+        "editorContextBridge.language": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "en", "zh-CN"],
+          "enumDescriptions": [
+            "Follow the VS Code display language.",
+            "Use English.",
+            "使用中文。"
+          ],
+          "description": "Display language for the Editor Context Bridge dashboard."
+        },
+        "editorContextBridge.configPaths": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": false,
+          "properties": {
+            "codex": {
+              "type": "string",
+              "default": "",
+              "description": "Override the Codex config path. Leave empty to use the platform default."
+            },
+            "opencode": {
+              "type": "string",
+              "default": "",
+              "description": "Override the OpenCode config path. Leave empty to use the platform default."
+            },
+            "claudeCode": {
+              "type": "string",
+              "default": "",
+              "description": "Override the Claude Code CLI config path. Leave empty to use ~/.claude.json."
+            },
+            "claudeDesktop": {
+              "type": "string",
+              "default": "",
+              "description": "Override the Claude Desktop config path. Useful for deployments such as Claude-3P."
+            }
+          },
+          "description": "Optional config file path overrides for built-in agents. Paths may start with ~."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://editor-context-bridge.local/schemas/editor-instance-update.schema.json",
+  "title": "Editor Context Bridge Instance Update",
+  "type": "object",
+  "required": ["source", "displayName", "workspaceRoots"],
+  "additionalProperties": false,
+  "properties": {
+    "source": { "enum": ["vscode", "visual_studio"] },
+    "displayName": { "type": "string" },
+    "workspaceRoots": { "type": "array", "items": { "type": "string" } },
+    "activeWorkspaceRoot": { "type": "string" },
+    "activeFile": { "type": "string" },
+    "cursor": { "$ref": "context-response.schema.json#/$defs/position" },
+    "selection": { "$ref": "context-response.schema.json#/$defs/selection" },
+    "errors": { "type": "array", "maxItems": 50, "items": { "$ref": "context-response.schema.json#/$defs/diagnosticError" } },
+    "openFiles": { "type": "array", "items": { "type": "string" } },
+    "lastActiveAt": { "type": "string", "format": "date-time" }
+  }
+}
+

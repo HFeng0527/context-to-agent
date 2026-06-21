@@ -1,0 +1,5 @@
+extensions/visualstudio/**/bin/
+extensions/visualstudio/**/obj/
+*.vsix
+*.bak
+.DS_Store

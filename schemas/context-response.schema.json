@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://editor-context-bridge.local/schemas/context-response.schema.json",
+  "title": "Editor Context Bridge Context Response",
+  "type": "object",
+  "required": ["schemaVersion", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["ready", "needs_selection", "no_instances"] },
+    "instance": { "$ref": "#/$defs/instanceSummary" },
+    "candidates": { "type": "array", "items": { "$ref": "#/$defs/instanceSummary" } },
+    "workspaceRoots": { "type": "array", "items": { "type": "string" } },
+    "activeWorkspaceRoot": { "type": "string" },
+    "activeFile": { "type": "string" },
+    "cursor": { "$ref": "#/$defs/position" },
+    "selection": { "$ref": "#/$defs/selection" },
+    "errors": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/diagnosticError" } }
+  },
+  "$defs": {
+    "instanceSummary": {
+      "type": "object",
+      "required": ["instanceId", "source", "displayName", "workspaceRoots", "lastActiveAt", "stale"],
+      "additionalProperties": false,
+      "properties": {
+        "instanceId": { "type": "string" },
+        "source": { "enum": ["vscode", "visual_studio"] },
+        "displayName": { "type": "string" },
+        "workspaceRoots": { "type": "array", "items": { "type": "string" } },
+        "activeWorkspaceRoot": { "type": "string" },
+        "activeFile": { "type": "string" },
+        "lastActiveAt": { "type": "string", "format": "date-time" },
+        "stale": { "type": "boolean" }
+      }
+    },
+    "position": {
+      "type": "object",
+      "required": ["line", "character"],
+      "additionalProperties": false,
+      "properties": { "line": { "type": "integer", "minimum": 0 }, "character": { "type": "integer", "minimum": 0 } }
+    },
+    "range": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": { "start": { "$ref": "#/$defs/position" }, "end": { "$ref": "#/$defs/position" } }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["isEmpty", "start", "end"],
+      "additionalProperties": false,
+      "properties": { "isEmpty": { "type": "boolean" }, "start": { "$ref": "#/$defs/position" }, "end": { "$ref": "#/$defs/position" }, "text": { "type": "string" } }
+    },
+    "diagnosticError": {
+      "type": "object",
+      "required": ["file", "range", "message"],
+      "additionalProperties": false,
+      "properties": { "file": { "type": "string" }, "range": { "$ref": "#/$defs/range" }, "message": { "type": "string" }, "code": { "type": "string" }, "source": { "type": "string" } }
+    }
+  }
+}
+
