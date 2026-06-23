@@ -1,5 +1,11 @@
 extensions/visualstudio/**/bin/
 extensions/visualstudio/**/obj/
+extensions/visualstudio/Properties/
+artifacts/
 *.vsix
 *.bak
 .DS_Store
+.vs/
+*_wpftmp.csproj
+extensions/visualstudio/**/.vs/
+extensions/visualstudio/**/*.csproj.user

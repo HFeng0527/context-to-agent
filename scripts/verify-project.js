@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const childProcess = require("child_process");
 
 const root = path.resolve(__dirname, "..");
+
+const vsRoot = "extensions/visualstudio";
 
 function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -23,24 +26,27 @@ function readJson(relativePath) {
   return JSON.parse(read(relativePath));
 }
 
-for (const generatedPath of [
-  "extensions/visualstudio/ContextToAgent2026/bin",
-  "extensions/visualstudio/ContextToAgent2026/obj"
-]) {
-  assert(!fs.existsSync(path.join(root, generatedPath)), `${generatedPath} should not be committed or kept as source`);
+for (const generatedPath of [`${vsRoot}/bin`, `${vsRoot}/obj`]) {
+  const trackedFiles = childProcess.execFileSync("git", ["ls-files", generatedPath], { cwd: root, encoding: "utf8" }).trim();
+  assert(!trackedFiles, `${generatedPath} should not be committed as source`);
 }
 
 readJson("schemas/context-response.schema.json");
 readJson("examples/opencode.json");
 assertIncludes("examples/codex_config.toml", "[mcp_servers.editor-context]");
-assertIncludes("docs/architecture.md", "stdio");
-assertIncludes("docs/architecture.md", "Privacy Boundary");
+assertIncludes("docs/en.md", "stdio");
+assertIncludes("docs/en.md", "Privacy Boundary");
+assertIncludes("docs/zh-CN.md", "stdio");
+assertIncludes("docs/zh-CN.md", "隐私边界");
 assertIncludes("README.md", "stdio");
 assertNotIncludes("README.md", "dotnet publish");
 assertNotIncludes("package.json", "build:bridge");
 assertNotIncludes("package.json", "stage:companion");
+assertIncludes("package.json", "package:extensions");
+assertIncludes("package.json", "scripts/package-extensions.ps1");
 
 const vscodeManifest = readJson("extensions/vscode/package.json");
+assert(vscodeManifest.displayName === "ContextToAgent", "VS Code displayName should be ContextToAgent");
 const commands = vscodeManifest.contributes.commands.map((command) => command.command);
 assert(commands.includes("contextToAgent.openSettings"), "VS Code settings command is missing");
 assert(commands.includes("contextToAgent.configureAgents"), "VS Code configure command is missing");
@@ -94,28 +100,57 @@ assert(!agentConfig.includes("Claude Desktop / Web"), "Unsupported Claude Deskto
 assert(!agentConfig.includes("backupConfig"), "Agent config must not create config backups before updates");
 assert(!agentConfig.includes("removeLegacyClaudeDesktopServer"), "Agent config must not mutate legacy Claude Desktop preferences");
 
-assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", "vsBuildErrorLevelHigh");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", ".Take(50)");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/EditorStateCollector.cs", "Object(\"TextDocument\")");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "NamedPipeServerStream");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "JArray batch");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "RecordCall");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "_clientName");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/stdioAdapter.ps1", "NamedPipeClientStream");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/stdioAdapter.ps1", "ClientName");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", ".claude.json");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "Claude-3P");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "ConfigureOtherAgentsText");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "ELECTRON_RUN_AS_NODE");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "[mcp_servers.editor-context.env]");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/BridgeSettingsDialog.xaml", "Configure Other Agents");
-assertIncludes("extensions/visualstudio/ContextToAgent2026/ContextToAgent2026.csproj", "stdioAdapter.ps1");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "HttpListener");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "/mcp");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "http://127.0.0.1");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "Backup(");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/AgentConfigService.cs", "RemoveLegacyClaudeDesktopServer");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/BridgeClient.cs", "Daemon");
-assertNotIncludes("extensions/visualstudio/ContextToAgent2026/ContextToAgent2026.csproj", "bin\\context-to-agent.exe");
+assertIncludes(`${vsRoot}/EditorStateCollector.cs`, "vsBuildErrorLevelHigh");
+assertIncludes(`${vsRoot}/EditorStateCollector.cs`, ".Take(50)");
+assertIncludes(`${vsRoot}/EditorStateCollector.cs`, "Object(\"TextDocument\")");
+assertIncludes(`${vsRoot}/BridgeClient.cs`, "NamedPipeServerStream");
+assertIncludes(`${vsRoot}/BridgeClient.cs`, "JArray batch");
+assertIncludes(`${vsRoot}/BridgeClient.cs`, "RecordCall");
+assertIncludes(`${vsRoot}/BridgeClient.cs`, "_clientName");
+assertIncludes(`${vsRoot}/stdioAdapter.ps1`, "NamedPipeClientStream");
+assertIncludes(`${vsRoot}/stdioAdapter.ps1`, "ClientName");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, ".claude.json");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "Claude-3P");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "ConfigureOtherAgentsText");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "ConfigureAgent");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "RevokeAgent");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "ResetConfigPath");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "SetLanguageMode");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "ELECTRON_RUN_AS_NODE");
+assertIncludes(`${vsRoot}/AgentConfigService.cs`, "[mcp_servers.editor-context.env]");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml.cs`, "Configure Other Agents");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml`, "OtherAgentsGuideText");
+assertNotIncludes(`${vsRoot}/BridgeSettingsControl.xaml`, "Grid.ColumnDefinitions");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml`, "ConfigureSelectedButton");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml`, "LanguageCombo");
+assertNotIncludes(`${vsRoot}/BridgeSettingsControl.xaml`, "Save Paths");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml.cs`, "AgentGrid_CellEditEnding");
+assertIncludes(`${vsRoot}/BridgeSettingsControl.xaml.cs`, "SaveSelectedPath");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "\"ContextToAgent\", \"General\"");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "FindExtensionsCommandBar");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "commandBars[\"MenuBar\"]");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "StartExtensionsMenuRetry");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "MsoControlType.msoControlButton");
+assertNotIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "MsoControlType.msoControlPopup");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "Type.Missing, Type.Missing, 1, true");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.cs`, "ExtensionsMenuButton_Click");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "<Menus>");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "id=\"ContextToAgentMenu\"");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "type=\"Menu\"");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "id=\"IDG_VS_MM_TOOLSADDINS\"");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "ContextToAgentMenuGroup");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "<ButtonText>Settings...</ButtonText>");
+assertIncludes(`${vsRoot}/ContextToAgentPackage.vsct`, "priority=\"0x0001\"");
+assertIncludes(`${vsRoot}/Vs18ShellIds.h`, "IDM_VS_MENU_EXTENSIONS 0x0091");
+assertIncludes(`${vsRoot}/Vs18ShellIds.h`, "IDG_VS_EXTENSIONS 0x6000");
+assertIncludes(`${vsRoot}/source.extension.vsixmanifest`, "Version=\"0.1.10\"");
+assertIncludes(`${vsRoot}/ContextToAgent.csproj`, "stdioAdapter.ps1");
+assertNotIncludes(`${vsRoot}/BridgeClient.cs`, "HttpListener");
+assertNotIncludes(`${vsRoot}/BridgeClient.cs`, "/mcp");
+assertNotIncludes(`${vsRoot}/AgentConfigService.cs`, "http://127.0.0.1");
+assertNotIncludes(`${vsRoot}/AgentConfigService.cs`, "Backup(");
+assertNotIncludes(`${vsRoot}/AgentConfigService.cs`, "RemoveLegacyClaudeDesktopServer");
+assertNotIncludes(`${vsRoot}/BridgeClient.cs`, "Daemon");
+assertNotIncludes(`${vsRoot}/ContextToAgent.csproj`, "bin\\context-to-agent.exe");
 
 console.log("Project verification passed.");

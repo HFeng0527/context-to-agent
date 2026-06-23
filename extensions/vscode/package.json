@@ -1,13 +1,15 @@
 {
   "name": "context-to-agent",
-  "displayName": "Context To Agent",
-  "description": "Lightweight MCP bridge for sharing current editor context with desktop agents.",
+  "displayName": "ContextToAgent",
+  "description": "ContextToAgent - a lightweight MCP bridge that shares the current editor context with desktop agents. (Chinese: 将当前编辑器上下文以 MCP 方式共享给桌面 Agent 的轻量级桥接工具。)",
   "version": "0.1.0",
   "publisher": "local",
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onStartupFinished",
     "onCommand:contextToAgent.openSettings",
@@ -19,30 +21,34 @@
     "commands": [
       {
         "command": "contextToAgent.openSettings",
-        "title": "Context To Agent: Open VS Code Settings"
+        "title": "ContextToAgent: Open VS Code Settings"
       },
       {
         "command": "contextToAgent.configureAgents",
-        "title": "Context To Agent: Open Dashboard"
+        "title": "ContextToAgent: Open Dashboard"
       },
       {
         "command": "contextToAgent.openDashboard",
-        "title": "Context To Agent: Open Dashboard"
+        "title": "ContextToAgent: Open Dashboard"
       }
     ],
     "configuration": {
-      "title": "Context To Agent",
+      "title": "ContextToAgent",
       "properties": {
         "contextToAgent.language": {
           "type": "string",
           "default": "auto",
-          "enum": ["auto", "en", "zh-CN"],
+          "enum": [
+            "auto",
+            "en",
+            "zh-CN"
+          ],
           "enumDescriptions": [
             "Follow the VS Code display language.",
             "Use English.",
             "使用中文。"
           ],
-          "description": "Display language for the Context To Agent dashboard."
+          "description": "Display language for the ContextToAgent dashboard."
         },
         "contextToAgent.configPaths": {
           "type": "object",

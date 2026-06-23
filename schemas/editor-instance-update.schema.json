@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://context-to-agent.local/schemas/editor-instance-update.schema.json",
-  "title": "Context To Agent Instance Update",
+  "title": "ContextToAgent Instance Update",
   "type": "object",
   "required": ["source", "displayName", "workspaceRoots"],
   "additionalProperties": false,

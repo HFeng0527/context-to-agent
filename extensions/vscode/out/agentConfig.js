@@ -11,6 +11,7 @@ function defaultEnv(env) {
     home,
     platform: process.platform,
     appData: process.env.APPDATA || path.join(home, "AppData", "Roaming"),
+    localAppData: process.env.LOCALAPPDATA || path.join(home, "AppData", "Local"),
     configHome: process.env.XDG_CONFIG_HOME || path.join(home, ".config"),
     pathOverrides: {},
     stdio: {
@@ -58,7 +59,7 @@ function defaultClaudeDesktopPath(values) {
 
 function claudeDesktopPathCandidates(values) {
   const base = values.platform === "win32"
-    ? values.appData
+    ? values.localAppData
     : path.join(values.home, "Library", "Application Support");
   return ["Claude-3P", "Claude"].map((name) => path.join(base, name, "claude_desktop_config.json"));
 }

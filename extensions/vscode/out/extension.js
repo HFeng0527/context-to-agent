@@ -73,7 +73,7 @@ function scheduleRefresh() {
     try {
       collectEditorState();
     } catch (error) {
-      console.error("Context To Agent refresh failed", error);
+      console.error("ContextToAgent refresh failed", error);
     }
   }, 300);
 }
@@ -396,7 +396,7 @@ async function openDashboard() {
   }
   dashboardPanel = vscode.window.createWebviewPanel(
     "contextToAgentDashboard",
-    "Context To Agent",
+    "ContextToAgent",
     vscode.ViewColumn.One,
     { enableScripts: true, retainContextWhenHidden: true }
   );
@@ -405,7 +405,7 @@ async function openDashboard() {
   });
   dashboardPanel.webview.onDidReceiveMessage((message) => {
     handleDashboardMessage(message).catch((error) => {
-      vscode.window.showErrorMessage(`Context To Agent: ${error.message}`);
+      vscode.window.showErrorMessage(`ContextToAgent: ${error.message}`);
     });
   });
   await refreshDashboard();
@@ -445,7 +445,7 @@ function updateStatusBar() {
   const t = uiStrings(resolveLanguage());
   const running = Boolean(ipcServer && ipcEndpoint);
   statusBarItem.text = running ? `$(plug) ${t.statusBarRunning}` : `$(circle-slash) ${t.statusBarStopped}`;
-  statusBarItem.tooltip = running ? `${t.bridge}: ${ipcEndpoint}` : "Context To Agent";
+  statusBarItem.tooltip = running ? `${t.bridge}: ${ipcEndpoint}` : "ContextToAgent";
   statusBarItem.show();
 }
 
@@ -813,7 +813,7 @@ function dashboardHtml(model) {
   <main class="page">
     <div class="top">
       <div class="titlebar">
-        <h1>Context To Agent</h1>
+        <h1>ContextToAgent</h1>
         <span class="status"><span class="dot ${model.bridgeRunning ? "" : "off"}"></span>${escapeHtml(model.bridgeRunning ? t.running : t.stopped)}</span>
       </div>
       <div class="segment" aria-label="${escapeHtml(t.language)}">${languageButtons}</div>
@@ -963,7 +963,7 @@ const UI_STRINGS = {
     configure: "Configure",
     configureAll: "Configure all",
     configured: "Configured",
-    configurePrompt: "Context To Agent will update these stdio MCP configs:",
+    configurePrompt: "ContextToAgent will update these stdio MCP configs:",
     copy: "Copy",
     bridge: "Stdio bridge",
     commandCopied: "Stdio command copied.",
@@ -1009,7 +1009,7 @@ const UI_STRINGS = {
     statusBarRunning: "Editor Context: Running",
     statusBarStopped: "Editor Context: Stopped",
     confirm: "Confirm",
-    updated: "Context To Agent MCP configuration updated."
+    updated: "ContextToAgent MCP configuration updated."
   },
   "zh-CN": {
     agents: "Agent MCP",
@@ -1017,7 +1017,7 @@ const UI_STRINGS = {
     configure: "配置",
     configureAll: "全部配置",
     configured: "已配置",
-    configurePrompt: "Context To Agent 将更新这些 stdio MCP 配置：",
+    configurePrompt: "ContextToAgent 将更新这些 stdio MCP 配置：",
     copy: "复制",
     bridge: "Stdio 桥接",
     commandCopied: "Stdio 命令已复制。",
@@ -1063,7 +1063,7 @@ const UI_STRINGS = {
     statusBarRunning: "编辑器上下文：运行中",
     statusBarStopped: "编辑器上下文：已停止",
     confirm: "确认",
-    updated: "Context To Agent MCP 配置已更新。"
+    updated: "ContextToAgent MCP 配置已更新。"
   }
 };
 

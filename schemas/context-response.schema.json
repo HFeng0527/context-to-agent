@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://context-to-agent.local/schemas/context-response.schema.json",
-  "title": "Context To Agent Context Response",
+  "title": "ContextToAgent Context Response",
   "type": "object",
   "required": ["schemaVersion", "status"],
   "additionalProperties": false,

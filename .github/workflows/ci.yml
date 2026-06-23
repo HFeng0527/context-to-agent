@@ -18,4 +18,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: microsoft/setup-msbuild@v2
-      - run: msbuild extensions\visualstudio\ContextToAgent2026\ContextToAgent2026.csproj /restore /p:Configuration=Release
+      - run: msbuild extensions\visualstudio\ContextToAgent.csproj /restore /p:Configuration=Release
