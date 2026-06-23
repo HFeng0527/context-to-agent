@@ -1,0 +1,13 @@
+#pragma once
+
+#ifndef IDM_VS_MENU_EXTENSIONS
+#define IDM_VS_MENU_EXTENSIONS 0x0091
+#endif
+
+#ifndef IDG_VS_EXTENSIONS
+#define IDG_VS_EXTENSIONS 0x6000
+#endif
+
+#ifndef IDG_VS_EXTENSIONS_REPARENT
+#define IDG_VS_EXTENSIONS_REPARENT 0x6001
+#endif

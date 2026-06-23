@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace ContextToAgent2026
+namespace ContextToAgent
 {
     internal static class InstanceIdentity
     {

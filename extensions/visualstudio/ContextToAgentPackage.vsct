@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+  <Extern href="Vs18ShellIds.h" />
+  <Commands package="guidContextToAgentPackage">
+    <Menus>
+      <Menu guid="guidContextToAgentCommandSet" id="ContextToAgentMenu" priority="0x700" type="Menu">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_MM_TOOLSADDINS" />
+        <Strings>
+          <ButtonText>ContextToAgent</ButtonText>
+          <CommandName>ContextToAgent.Menu</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+    <Groups>
+      <Group guid="guidContextToAgentCommandSet" id="ContextToAgentMenuGroup" priority="0x0000">
+        <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentMenu" />
+      </Group>
+    </Groups>
+    <Buttons>
+      <Button guid="guidContextToAgentCommandSet" id="OpenSettingsCommand" priority="0x0001" type="Button">
+        <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentMenuGroup" />
+        <Strings>
+          <ButtonText>Settings...</ButtonText>
+          <CommandName>ContextToAgent.OpenSettings</CommandName>
+          <LocCanonicalName>Extensions.ContextToAgent Settings</LocCanonicalName>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+  <Symbols>
+    <GuidSymbol name="guidContextToAgentPackage" value="{cfd2b31d-7820-4015-b91f-f1b36f6d926f}" />
+    <GuidSymbol name="guidContextToAgentCommandSet" value="{d6ccb87b-8d24-4915-8748-4464481054bc}">
+      <IDSymbol name="ContextToAgentMenu" value="0x1100" />
+      <IDSymbol name="ContextToAgentMenuGroup" value="0x1150" />
+      <IDSymbol name="OpenSettingsCommand" value="0x0100" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

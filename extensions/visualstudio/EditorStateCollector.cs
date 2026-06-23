@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ContextToAgent2026
+namespace ContextToAgent
 {
     internal sealed class EditorStateCollector
     {
@@ -22,16 +22,25 @@ namespace ContextToAgent2026
             return new EditorInstanceUpdate
             {
                 Source = "visual_studio",
-                DisplayName = "Visual Studio 2026",
+                DisplayName = DisplayName(),
                 WorkspaceRoots = root == null ? new List<string>() : new List<string> { root },
                 ActiveWorkspaceRoot = root,
                 ActiveFile = string.IsNullOrWhiteSpace(activeFile) ? null : activeFile,
-                Cursor = selection?.End,
+                Cursor = selection?.Active,
                 Selection = selection,
                 Errors = Errors(root, activeFile),
                 OpenFiles = OpenFiles(),
                 LastActiveAt = DateTimeOffset.UtcNow
             };
+        }
+
+        private string DisplayName()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var version = _dte.Version ?? string.Empty;
+            if (version.StartsWith("17.", StringComparison.Ordinal)) return "Visual Studio 2022";
+            if (version.StartsWith("18.", StringComparison.Ordinal)) return "Visual Studio 2026";
+            return "Visual Studio";
         }
 
         private string SolutionRoot()
@@ -52,13 +61,23 @@ namespace ContextToAgent2026
             var textSelection = textDocument.Selection;
             var text = textSelection.Text;
             var isEmpty = string.IsNullOrEmpty(text);
-            return new SelectionPayload { IsEmpty = isEmpty, Start = ToPosition(textSelection.AnchorPoint), End = ToPosition(textSelection.ActivePoint), Text = isEmpty ? null : text };
+            var anchor = ToPosition(textSelection.AnchorPoint);
+            var active = ToPosition(textSelection.ActivePoint);
+            var start = BeforeOrEqual(anchor, active) ? anchor : active;
+            var end = BeforeOrEqual(anchor, active) ? active : anchor;
+            return new SelectionPayload { IsEmpty = isEmpty, Start = start, End = end, Active = active, Text = isEmpty ? null : text };
         }
 
         private static PositionPayload ToPosition(TextPoint point)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             return new PositionPayload { Line = Math.Max(0, point.Line - 1), Character = Math.Max(0, point.LineCharOffset - 1) };
+        }
+
+        private static bool BeforeOrEqual(PositionPayload left, PositionPayload right)
+        {
+            if (left.Line != right.Line) return left.Line < right.Line;
+            return left.Character <= right.Character;
         }
 
         private List<string> OpenFiles()

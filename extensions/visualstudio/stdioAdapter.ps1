@@ -106,6 +106,6 @@ while ($true) {
             [Console]::Out.Flush()
         }
     } catch {
-        Write-JsonRpcError $ids -32000 "Visual Studio extension is unavailable. Open Visual Studio and enable Context To Agent."
+        Write-JsonRpcError $ids -32000 "Visual Studio extension is unavailable. Open Visual Studio and enable ContextToAgent."
     }
 }

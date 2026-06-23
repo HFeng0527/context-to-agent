@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContextToAgent", "ContextToAgent.csproj", "{BAC2D73D-0180-8FED-CD5C-DBA1221881A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BAC2D73D-0180-8FED-CD5C-DBA1221881A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC2D73D-0180-8FED-CD5C-DBA1221881A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAC2D73D-0180-8FED-CD5C-DBA1221881A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC2D73D-0180-8FED-CD5C-DBA1221881A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7639A971-8724-46DC-9C6F-EA7D3F808ABC}
+	EndGlobalSection
+EndGlobal

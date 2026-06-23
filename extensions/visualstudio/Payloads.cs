@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ContextToAgent2026
+namespace ContextToAgent
 {
     internal static class JsonSettings
     {
@@ -31,7 +31,7 @@ namespace ContextToAgent2026
     }
     internal sealed class PositionPayload { public int Line { get; set; } public int Character { get; set; } }
     internal sealed class RangePayload { public PositionPayload Start { get; set; } public PositionPayload End { get; set; } }
-    internal sealed class SelectionPayload { public bool IsEmpty { get; set; } public PositionPayload Start { get; set; } public PositionPayload End { get; set; } public string Text { get; set; } }
+    internal sealed class SelectionPayload { public bool IsEmpty { get; set; } public PositionPayload Start { get; set; } public PositionPayload End { get; set; } public PositionPayload Active { get; set; } public string Text { get; set; } }
     internal sealed class DiagnosticErrorPayload { public string File { get; set; } public RangePayload Range { get; set; } public string Message { get; set; } public string Code { get; set; } public string Source { get; set; } }
     internal sealed class IpcStatusPayload
     {

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ContextToAgent2026
+namespace ContextToAgent
 {
     internal sealed class BridgeClient : IDisposable
     {
@@ -156,7 +156,7 @@ namespace ContextToAgent2026
 
         private object GetContext()
         {
-            var latest = _latest ?? new EditorInstanceUpdate { Source = "visual_studio", DisplayName = "Visual Studio 2026", WorkspaceRoots = new List<string>(), Errors = new List<DiagnosticErrorPayload>(), LastActiveAt = DateTimeOffset.UtcNow };
+            var latest = _latest ?? new EditorInstanceUpdate { Source = "visual_studio", DisplayName = "Visual Studio", WorkspaceRoots = new List<string>(), Errors = new List<DiagnosticErrorPayload>(), LastActiveAt = DateTimeOffset.UtcNow };
             return new
             {
                 schemaVersion = "1.0",
@@ -173,7 +173,7 @@ namespace ContextToAgent2026
 
         private void RecordCall(string clientName, string toolName, string connectionId)
         {
-            var latest = _latest ?? new EditorInstanceUpdate { Source = "visual_studio", DisplayName = "Visual Studio 2026", WorkspaceRoots = new List<string>(), Errors = new List<DiagnosticErrorPayload>(), LastActiveAt = DateTimeOffset.UtcNow };
+            var latest = _latest ?? new EditorInstanceUpdate { Source = "visual_studio", DisplayName = "Visual Studio", WorkspaceRoots = new List<string>(), Errors = new List<DiagnosticErrorPayload>(), LastActiveAt = DateTimeOffset.UtcNow };
             _recentReads.Add(new ReadRecordPayload
             {
                 ClientName = string.IsNullOrWhiteSpace(clientName) ? "mcp-client" : clientName,
@@ -197,7 +197,7 @@ namespace ContextToAgent2026
             {
                 instanceId = _instanceId,
                 source = latest?.Source ?? "visual_studio",
-                displayName = latest?.DisplayName ?? "Visual Studio 2026",
+                displayName = latest?.DisplayName ?? "Visual Studio",
                 workspaceRoots = latest?.WorkspaceRoots ?? new List<string>(),
                 activeWorkspaceRoot = latest?.ActiveWorkspaceRoot,
                 lastActiveAt = latest?.LastActiveAt ?? DateTimeOffset.UtcNow,
