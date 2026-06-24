@@ -1,7 +1,8 @@
 {
   "name": "context-to-agent-workspace",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.15",
+  "license": "Apache-2.0",
   "scripts": {
     "test:vscode-config": "node extensions/vscode/test/agentConfig.test.js",
     "verify": "node scripts/verify-project.js && node --check extensions/vscode/out/extension.js && node --check extensions/vscode/out/agentConfig.js && node --check extensions/vscode/out/stdioAdapter.js && npm run test:vscode-config",
