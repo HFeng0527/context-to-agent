@@ -6,7 +6,8 @@ param(
 
     [switch]$SkipVerify,
     [switch]$SkipVisualStudio,
-    [switch]$SkipVSCode
+    [switch]$SkipVSCode,
+    [switch]$SkipJetBrains
 )
 
 $ErrorActionPreference = "Stop"
@@ -115,7 +116,7 @@ if (-not $SkipVisualStudio) {
         $projectDir = Split-Path -Parent $project
         $outputPath = Join-Path $projectDir "bin\$Configuration\net472\"
         $intermediatePath = Join-Path $projectDir "obj\$Configuration\net472\"
-        $assemblyPath = Join-Path $outputPath "ContextToAgent.dll"
+        $assemblyPath = Join-Path $outputPath "ContextToAgent.VisualStudio.dll"
         $vstoolsPath = Get-LatestVsSdkToolsPath
 
         Invoke-CommandChecked -FilePath "dotnet" -Arguments @("restore", $project) -WorkingDirectory $repoRoot
@@ -154,7 +155,7 @@ if (-not $SkipVSCode) {
         $packageJson = [System.IO.File]::ReadAllText($manifest, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         $vsixPath = Join-Path $OutputDirectory "ContextToAgent-vscode-$($packageJson.version).vsix"
 
-        Invoke-CommandChecked -FilePath "npx" -Arguments @("--yes", "@vscode/vsce", "package", "--out", $vsixPath) -WorkingDirectory $vscodeDir
+        Invoke-CommandChecked -FilePath "npx" -Arguments @("--yes", "@vscode/vsce", "package", "--allow-missing-repository", "--out", $vsixPath) -WorkingDirectory $vscodeDir
 
         if (-not (Test-Path $vsixPath)) {
             throw "VS Code VSIX was not created: $vsixPath"
@@ -164,8 +165,53 @@ if (-not $SkipVSCode) {
     }
 }
 
+if (-not $SkipJetBrains) {
+    Invoke-Step "Package JetBrains plugin" {
+        $jetbrainsDir = Join-Path $repoRoot "extensions\jetbrains"
+        $gradleWrapper = Join-Path $jetbrainsDir "gradlew.bat"
+        $gradleCommand = if (Test-Path $gradleWrapper) { ".\gradlew.bat" } else { "gradle" }
+        $gradleProjectCache = Join-Path $repoRoot ".tmp-gradle-project-cache"
+        $gradleBuildDir = Join-Path $repoRoot ".tmp-jetbrains-build"
+        $kotlinProjectDir = Join-Path $repoRoot ".tmp-kotlin-project"
+        $kotlinTempDir = Join-Path $repoRoot ".tmp-kotlin-temp"
+
+        foreach ($directory in @($gradleProjectCache, $gradleBuildDir, $kotlinProjectDir, $kotlinTempDir)) {
+            New-Item -ItemType Directory -Force -Path $directory | Out-Null
+        }
+
+        $gradleBuildDirArg = ($gradleBuildDir -replace "\\", "/")
+        $gradleProjectCacheArg = ($gradleProjectCache -replace "\\", "/")
+        $kotlinProjectDirArg = ($kotlinProjectDir -replace "\\", "/")
+        $kotlinTempDirArg = ($kotlinTempDir -replace "\\", "/")
+        $gradleArguments = @(
+            "--project-cache-dir",
+            $gradleProjectCacheArg,
+            "-Dorg.gradle.project.buildDir=$gradleBuildDirArg",
+            "-Pkotlin.project.persistent.dir=$kotlinProjectDirArg",
+            "-Pkotlin.compiler.execution.strategy=in-process",
+            "-Djava.io.tmpdir=$kotlinTempDirArg",
+            "buildPlugin"
+        )
+
+        Invoke-CommandChecked -FilePath $gradleCommand -Arguments $gradleArguments -WorkingDirectory $jetbrainsDir
+
+        $distribution = Get-ChildItem (Join-Path $gradleBuildDir "distributions") -Filter "*.zip" |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+        if (-not $distribution) {
+            throw "JetBrains plugin ZIP was not created."
+        }
+
+        $target = Join-Path $OutputDirectory "ContextToAgent-jetbrains-$($distribution.BaseName -replace '^context-to-agent-jetbrains-', '').zip"
+        Copy-Item -Force -Path $distribution.FullName -Destination $target
+        $script:packages += $target
+    }
+}
+
 Write-Host ""
 Write-Host "Packages created:" -ForegroundColor Green
 foreach ($package in $packages) {
     Write-Host "  $package"
 }
+

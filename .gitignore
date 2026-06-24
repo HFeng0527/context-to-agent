@@ -9,3 +9,12 @@ artifacts/
 *_wpftmp.csproj
 extensions/visualstudio/**/.vs/
 extensions/visualstudio/**/*.csproj.user
+extensions/jetbrains/.gradle/
+extensions/jetbrains/build/
+extensions/jetbrains/.intellijPlatform/
+.tmp-gradle-project-cache/
+.tmp-jetbrains-build/
+.tmp-kotlin-project/
+.tmp-kotlin-temp/
+goal.txt
+nul
