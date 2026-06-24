@@ -86,19 +86,22 @@ JSON schemas live in `schemas/`.
 
 There is no companion service binary to publish. Package only the editor plugins.
 
-The repository ships a single script that packages all editor plugins:
+The repository ships a single cross-platform Node.js script that packages editor plugins:
 
-```powershell
+```sh
 npm run package
 ```
 
-This runs the verification step, then builds the Visual Studio VSIX, the VS Code VSIX, and the JetBrains plugin ZIP into `artifacts/`. Use the switches to skip any side:
+This runs the verification step, then builds packages into `artifacts/`. On Windows it builds the Visual Studio VSIX, the VS Code-compatible VSIX, and the JetBrains plugin ZIP. On macOS/Linux it builds the VS Code-compatible VSIX and JetBrains plugin ZIP, and skips the Visual Studio VSIX because that package requires the Visual Studio SDK build tools.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVisualStudio
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVSCode
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipJetBrains
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVerify
+Use script options after `--`:
+
+```sh
+npm run package -- --skip-visualstudio
+npm run package -- --skip-vscode
+npm run package -- --skip-jetbrains
+npm run package -- --skip-verify
+npm run package -- --configuration Debug --output-directory ./artifacts-debug
 ```
 
 The named artifacts are:
@@ -119,36 +122,16 @@ Prerequisites:
 - .NET SDK
 - Visual Studio SDK build tools restored from NuGet, or a Visual Studio installation with the extension development workload
 
-Prefer the unified script. To build the Visual Studio VSIX manually, from the repository root:
+Prefer the unified script. To build only the Visual Studio VSIX on Windows:
 
-```powershell
-dotnet restore .\extensions\visualstudio\ContextToAgent.csproj
-
-$projDir = Resolve-Path .\extensions\visualstudio
-$vssdk = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.vssdk.buildtools" -Directory |
-  Sort-Object { [version]$_.Name } -Descending |
-  Select-Object -First 1
-$vstools = Join-Path $vssdk.FullName "tools"
-$int = Join-Path $projDir "obj\Release\net472\"
-$out = Join-Path $projDir "bin\Release\net472\"
-$dll = Join-Path $out "ContextToAgent.VisualStudio.dll"
-
-dotnet msbuild "$projDir\ContextToAgent.csproj" `
-  '/t:Build;GeneratePkgDef;CreateVsixContainer' `
-  /p:Configuration=Release `
-  /p:VSToolsPath="$vstools" `
-  /p:IntermediateOutputPath="$int" `
-  /p:OutputPath="$out" `
-  /p:OutDir="$out" `
-  /p:CreatePkgDefAssemblyToProcess="$dll" `
-  /p:TargetVsixContainer="$out\ContextToAgent.vsix" `
-  /p:DeployExtension=false
+```sh
+npm run package -- --skip-vscode --skip-jetbrains
 ```
 
 The output is:
 
 ```text
-extensions\visualstudio\bin\Release\net472\ContextToAgent.vsix
+artifacts\ContextToAgent-visualstudio-<version>.vsix
 ```
 
 To install it manually, double-click the VSIX or use Visual Studio's extension installer. Close running Visual Studio instances before upgrading the extension.

@@ -84,19 +84,22 @@ JSON schema 位于 `schemas/`。
 
 无需发布任何伴随服务二进制。仅需打包编辑器插件。
 
-仓库提供了一个统一脚本，可一次性打包所有编辑器插件：
+仓库提供了一个跨平台 Node.js 统一脚本，可打包编辑器插件：
 
-```powershell
+```sh
 npm run package
 ```
 
-该命令会先运行验证，再构建 Visual Studio VSIX、VS Code VSIX 与 JetBrains 插件 ZIP 到 `artifacts/`。可用开关跳过任一侧：
+该命令会先运行验证，再把产物输出到 `artifacts/`。在 Windows 上会构建 Visual Studio VSIX、VS Code 兼容 VSIX 与 JetBrains 插件 ZIP；在 macOS/Linux 上会构建 VS Code 兼容 VSIX 与 JetBrains 插件 ZIP，并自动跳过 Visual Studio VSIX，因为它需要 Visual Studio SDK 构建工具。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVisualStudio
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVSCode
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipJetBrains
-powershell -ExecutionPolicy Bypass -File scripts\package-extensions.ps1 -SkipVerify
+脚本参数放在 `--` 后：
+
+```sh
+npm run package -- --skip-visualstudio
+npm run package -- --skip-vscode
+npm run package -- --skip-jetbrains
+npm run package -- --skip-verify
+npm run package -- --configuration Debug --output-directory ./artifacts-debug
 ```
 
 产物命名为：
@@ -117,36 +120,16 @@ Visual Studio 扩展项目位于 `extensions/visualstudio`，工程文件为 `Co
 - .NET SDK
 - 从 NuGet 还原的 Visual Studio SDK 构建工具，或安装了扩展开发工作负载的 Visual Studio
 
-优先使用统一脚本。若要手动构建 Visual Studio VSIX，在仓库根目录执行：
+优先使用统一脚本。若只在 Windows 上构建 Visual Studio VSIX：
 
-```powershell
-dotnet restore .\extensions\visualstudio\ContextToAgent.csproj
-
-$projDir = Resolve-Path .\extensions\visualstudio
-$vssdk = Get-ChildItem "$env:USERPROFILE\.nuget\packages\microsoft.vssdk.buildtools" -Directory |
-  Sort-Object { [version]$_.Name } -Descending |
-  Select-Object -First 1
-$vstools = Join-Path $vssdk.FullName "tools"
-$int = Join-Path $projDir "obj\Release\net472\"
-$out = Join-Path $projDir "bin\Release\net472\"
-$dll = Join-Path $out "ContextToAgent.dll"
-
-dotnet msbuild "$projDir\ContextToAgent.csproj" `
-  '/t:Build;GeneratePkgDef;CreateVsixContainer' `
-  /p:Configuration=Release `
-  /p:VSToolsPath="$vstools" `
-  /p:IntermediateOutputPath="$int" `
-  /p:OutputPath="$out" `
-  /p:OutDir="$out" `
-  /p:CreatePkgDefAssemblyToProcess="$dll" `
-  /p:TargetVsixContainer="$out\ContextToAgent.vsix" `
-  /p:DeployExtension=false
+```sh
+npm run package -- --skip-vscode --skip-jetbrains
 ```
 
 产物为：
 
 ```text
-extensions\visualstudio\bin\Release\net472\ContextToAgent.vsix
+artifacts\ContextToAgent-visualstudio-<version>.vsix
 ```
 
 手动安装：双击 VSIX，或使用 Visual Studio 的扩展安装器。升级扩展前请关闭正在运行的 Visual Studio 实例。
