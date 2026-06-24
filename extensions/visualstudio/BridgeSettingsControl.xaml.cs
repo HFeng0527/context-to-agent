@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,15 +51,6 @@ namespace ContextToAgent
             RecentReadsList.ItemsSource = ipcStatus?.RecentReadLabels() ?? new[] { strings.NoReads };
             OtherAgentsGuideText.Text = _agentConfigService.ConfigureOtherAgentsText(_bridgeClient, _agentConfigService.ResolvedLanguage());
             UpdateSelectedButtons();
-        }
-
-        private void StartBridge_Click(object sender, RoutedEventArgs e)
-        {
-            _ = RunUiActionAsync(async () =>
-            {
-                await _bridgeClient.EnsureIpcAsync();
-                await RefreshAsync();
-            });
         }
 
         private void ConfigureSelected_Click(object sender, RoutedEventArgs e)
@@ -121,18 +110,6 @@ namespace ContextToAgent
                     _agentConfigService.RevokeAll(_bridgeClient);
                     await RefreshAsync();
                 }
-            });
-        }
-
-        private void CopyGuide_Click(object sender, RoutedEventArgs e)
-        {
-            _ = RunUiActionAsync(async () =>
-            {
-                var strings = Strings();
-                var text = OtherAgentsGuideText.Text;
-                var copied = TrySetClipboardText(text);
-                StatusText.Text = copied ? strings.GuideCopied : strings.ClipboardBusy;
-                await Task.CompletedTask;
             });
         }
 
@@ -200,10 +177,8 @@ namespace ContextToAgent
             ConfigPathColumn.Header = strings.ConfigPath;
             OtherAgentsLabel.Text = strings.ConfigureOtherAgents;
             RecentReadsLabel.Text = strings.RecentReads;
-            StartBridgeButton.Content = strings.StartBridge;
             ConfigureSelectedButton.Content = strings.ConfigureSelected;
             ConfigureAllButton.Content = strings.ConfigureAll;
-            CopyGuideButton.Content = strings.CopyGuide;
             ResetPathButton.Content = strings.ResetPath;
             RevokeSelectedButton.Content = strings.RevokeSelected;
             RevokeAllButton.Content = strings.RevokeAll;
@@ -238,30 +213,6 @@ namespace ContextToAgent
             RevokeSelectedButton.IsEnabled = hasSelection;
         }
 
-        private static bool TrySetClipboardText(string text)
-        {
-            for (var attempt = 0; attempt < 5; attempt++)
-            {
-                try
-                {
-                    Clipboard.SetText(text ?? string.Empty);
-                    return true;
-                }
-                catch (COMException)
-                {
-                    if (attempt == 4) return false;
-                    Thread.Sleep(50 + attempt * 50);
-                }
-                catch (ExternalException)
-                {
-                    if (attempt == 4) return false;
-                    Thread.Sleep(50 + attempt * 50);
-                }
-            }
-
-            return false;
-        }
-
         private UiStrings Strings()
         {
             return _agentConfigService.ResolvedLanguage() == "zh-CN" ? UiStrings.ZhCn : UiStrings.En;
@@ -293,7 +244,6 @@ namespace ContextToAgent
             public string Auto { get; set; }
             public string BridgeReady { get; set; }
             public string BridgeUnavailable { get; set; }
-            public string ClipboardBusy { get; set; }
             public string ConfigPath { get; set; }
             public string ConfigureAll { get; set; }
             public string ConfigureAllPrompt { get; set; }
@@ -301,10 +251,8 @@ namespace ContextToAgent
             public string ConfigureSelected { get; set; }
             public string ConfigureSelectedPrompt { get; set; }
             public string Configured { get; set; }
-            public string CopyGuide { get; set; }
             public string Detected { get; set; }
             public string GlobalScope { get; set; }
-            public string GuideCopied { get; set; }
             public string Language { get; set; }
             public string NoReads { get; set; }
             public string NotFound { get; set; }
@@ -316,7 +264,6 @@ namespace ContextToAgent
             public string RevokeSelected { get; set; }
             public string RevokeSelectedPrompt { get; set; }
             public string Scope { get; set; }
-            public string StartBridge { get; set; }
             public string Status { get; set; }
             public string Unavailable { get; set; }
 
@@ -326,7 +273,6 @@ namespace ContextToAgent
                 Auto = "Auto",
                 BridgeReady = "Stdio bridge is ready through pipe: ",
                 BridgeUnavailable = "Stdio bridge is unavailable.",
-                ClipboardBusy = "Clipboard is busy. The guide remains visible below.",
                 ConfigPath = "Config Path",
                 ConfigureAll = "Configure All",
                 ConfigureAllPrompt = "Update all supported stdio MCP configs?",
@@ -334,10 +280,8 @@ namespace ContextToAgent
                 ConfigureSelected = "Configure Selected",
                 ConfigureSelectedPrompt = "Update this stdio MCP config?",
                 Configured = "Configured",
-                CopyGuide = "Copy Guide",
                 Detected = "Detected",
                 GlobalScope = "Global",
-                GuideCopied = "Other agents configuration guide copied to clipboard.",
                 Language = "Language",
                 NoReads = "No reads yet",
                 NotFound = "Not found",
@@ -345,11 +289,10 @@ namespace ContextToAgent
                 ResetPath = "Reset Path",
                 ResetSelectedPrompt = "Reset this agent config path to its default?",
                 RevokeAll = "Revoke All",
-                RevokeAllPrompt = "Remove editor-context from all managed MCP configs?",
+                RevokeAllPrompt = "Remove editor-context-visualstudio from all managed MCP configs?",
                 RevokeSelected = "Revoke Selected",
-                RevokeSelectedPrompt = "Remove editor-context from this MCP config?",
+                RevokeSelectedPrompt = "Remove editor-context-visualstudio from this MCP config?",
                 Scope = "Scope",
-                StartBridge = "Start Bridge",
                 Status = "Status",
                 Unavailable = "Unavailable"
             };
@@ -360,7 +303,6 @@ namespace ContextToAgent
                 Auto = "自动",
                 BridgeReady = "Stdio 桥接已就绪，管道：",
                 BridgeUnavailable = "Stdio 桥接不可用。",
-                ClipboardBusy = "剪贴板正忙。配置说明仍显示在下方。",
                 ConfigPath = "配置路径",
                 ConfigureAll = "全部配置",
                 ConfigureAllPrompt = "更新所有支持的 stdio MCP 配置？",
@@ -368,10 +310,8 @@ namespace ContextToAgent
                 ConfigureSelected = "配置选中项",
                 ConfigureSelectedPrompt = "更新这个 stdio MCP 配置？",
                 Configured = "已配置",
-                CopyGuide = "复制说明",
                 Detected = "已检测",
                 GlobalScope = "全局",
-                GuideCopied = "其他 Agent 配置说明已复制到剪贴板。",
                 Language = "语言",
                 NoReads = "暂无读取记录",
                 NotFound = "未找到",
@@ -379,11 +319,10 @@ namespace ContextToAgent
                 ResetPath = "重置路径",
                 ResetSelectedPrompt = "将这个 Agent 的配置路径重置为默认值？",
                 RevokeAll = "全部撤销",
-                RevokeAllPrompt = "从所有托管 MCP 配置中移除 editor-context？",
+                RevokeAllPrompt = "从所有托管 MCP 配置中移除 editor-context-visualstudio？",
                 RevokeSelected = "撤销选中项",
-                RevokeSelectedPrompt = "从这个 MCP 配置中移除 editor-context？",
+                RevokeSelectedPrompt = "从这个 MCP 配置中移除 editor-context-visualstudio？",
                 Scope = "范围",
-                StartBridge = "启动桥接",
                 Status = "状态",
                 Unavailable = "不可用"
             };

@@ -1,13 +1,15 @@
-<Window x:Class="ContextToAgent.BridgeSettingsDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:ContextToAgent"
-        Title="ContextToAgent" Height="420" Width="720"
-        WindowStartupLocation="CenterOwner">
-  <DockPanel>
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,0,12,12">
-      <Button Content="Close" Width="80" Click="Close_Click" />
-    </StackPanel>
+<Window
+    x:Class="ContextToAgent.BridgeSettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:ContextToAgent"
+    xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+    Title="Context To Agent"
+    Width="820"
+    Height="620"
+    MinWidth="760"
+    MinHeight="560"
+    Background="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"
+    WindowStartupLocation="CenterScreen">
     <local:BridgeSettingsControl x:Name="SettingsControl" />
-  </DockPanel>
 </Window>

@@ -7,7 +7,7 @@ namespace ContextToAgent
 {
     internal sealed class BridgeSettingsCommand
     {
-        private static readonly Guid CommandSet = new Guid("d6ccb87b-8d24-4915-8748-4464481054bc");
+        private static readonly Guid CommandSet = new Guid("16ae04a6-f1aa-42cc-ab3a-ce1efb25c540");
         private const int CommandId = 0x0100;
 
         private BridgeSettingsCommand(OleMenuCommandService commandService)

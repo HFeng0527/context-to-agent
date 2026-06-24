@@ -1,5 +1,6 @@
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.CommandBars;
 using Microsoft.VisualStudio.Shell;
 using System;
@@ -14,11 +15,15 @@ namespace ContextToAgent
     [Guid(PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideOptionPage(typeof(ContextToAgentOptionsPage), "ContextToAgent", "General", 0, 0, true)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.ShellInitialized_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class ContextToAgentPackage : AsyncPackage
     {
-        public const string PackageGuidString = "cfd2b31d-7820-4015-b91f-f1b36f6d926f";
+        public const string PackageGuidString = "066fbd03-0d37-4aa5-8530-56fcf59a0716";
+        private const string ExtensionsMenuCaption = "Context To Agent";
+        private const string OpenSettingsCommandName = "ContextToAgent.OpenSettings";
+        private const string OpenSettingsCanonicalName = "Extensions.ContextToAgent.OpenSettings";
         private DTE2 _dte;
         private BridgeClient _bridgeClient;
         private EditorStateCollector _collector;
@@ -28,20 +33,58 @@ namespace ContextToAgent
         private DispatcherTimer _extensionsMenuRetryTimer;
         private CommandBarButton _extensionsMenuButton;
         private int _extensionsMenuAttempts;
+        private int _pushStateActive;
 
-        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            var dte = await GetServiceAsync(typeof(DTE)) as DTE2;
-            if (dte == null) throw new InvalidOperationException("DTE service is unavailable.");
-            _dte = dte;
             _bridgeClient = BridgeRuntime.BridgeClient;
-            _collector = new EditorStateCollector(_dte);
-            await BridgeSettingsCommand.InitializeAsync(this);
-            WireEditorEvents();
-            StartExtensionsMenuRetry();
-            StartStateTimer();
-            _ = PushStateAsync();
+            StartBridgeInBackground();
+#pragma warning disable VSTHRD010
+            StartVisualStudioIntegration(cancellationToken);
+#pragma warning restore VSTHRD010
+            return Task.CompletedTask;
+        }
+
+        private void StartBridgeInBackground()
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _bridgeClient.EnsureIpcAsync().ConfigureAwait(false);
+                    BridgeRuntime.AgentConfigService.RefreshConfiguredAgents(_bridgeClient);
+                }
+                catch
+                {
+                }
+            });
+        }
+
+        private void StartVisualStudioIntegration(CancellationToken cancellationToken)
+        {
+            _ = JoinableTaskFactory.RunAsync(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
+                    await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                    var dte = await GetServiceAsync(typeof(DTE)) as DTE2;
+                    if (dte == null) return;
+                    _dte = dte;
+                    _collector = new EditorStateCollector(_dte);
+                    await BridgeSettingsCommand.InitializeAsync(this);
+                    WireEditorEvents();
+                    StartExtensionsMenuRetry();
+                    StartStateTimer();
+                    _ = PushStateAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch
+                {
+                }
+            });
         }
 
         private void WireEditorEvents()
@@ -59,11 +102,11 @@ namespace ContextToAgent
             ThreadHelper.ThrowIfNotOnUIThread();
             if (TryAddExtensionsMenuButton()) return;
 
-            _extensionsMenuRetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _extensionsMenuRetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _extensionsMenuRetryTimer.Tick += (sender, args) =>
             {
                 _extensionsMenuAttempts++;
-                if (TryAddExtensionsMenuButton() || _extensionsMenuAttempts >= 30)
+                if (TryAddExtensionsMenuButton() || _extensionsMenuAttempts >= 10)
                 {
                     _extensionsMenuRetryTimer.Stop();
                     _extensionsMenuRetryTimer = null;
@@ -84,20 +127,84 @@ namespace ContextToAgent
                 foreach (CommandBarControl control in extensionsMenu.Controls)
                 {
                     if (!IsContextToAgentMenu(control.Caption)) continue;
+                    WireExtensionsMenuButton(control);
                     return true;
                 }
 
-                _extensionsMenuButton = (CommandBarButton)extensionsMenu.Controls.Add(MsoControlType.msoControlButton, Type.Missing, Type.Missing, 1, true);
-                _extensionsMenuButton.Caption = "ContextToAgent";
-                _extensionsMenuButton.Tag = "ContextToAgent.OpenSettings";
-                _extensionsMenuButton.Style = MsoButtonStyle.msoButtonCaption;
-                _extensionsMenuButton.Click += ExtensionsMenuButton_Click;
+                if (TryAddVsCommandButton(extensionsMenu)) return true;
+
+                var button = (CommandBarButton)extensionsMenu.Controls.Add(MsoControlType.msoControlButton, Type.Missing, Type.Missing, 1, true);
+                ConfigureExtensionsMenuButton(button);
                 return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        private bool TryAddVsCommandButton(CommandBar extensionsMenu)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                var command = FindOpenSettingsCommand();
+                if (command == null) return false;
+                command.AddControl(extensionsMenu, 1);
+                foreach (CommandBarControl control in extensionsMenu.Controls)
+                {
+                    if (!IsContextToAgentMenu(control.Caption)) continue;
+                    WireExtensionsMenuButton(control);
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        private EnvDTE.Command FindOpenSettingsCommand()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var commands = _dte.Commands;
+            if (commands == null) return null;
+            foreach (var name in new[] { OpenSettingsCommandName, OpenSettingsCanonicalName })
+            {
+                try
+                {
+                    return commands.Item(name, -1);
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
+        }
+
+        private void WireExtensionsMenuButton(CommandBarControl control)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (control is CommandBarButton button) ConfigureExtensionsMenuButton(button);
+        }
+
+        private void ConfigureExtensionsMenuButton(CommandBarButton button)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _extensionsMenuButton = button;
+            _extensionsMenuButton.Caption = ExtensionsMenuCaption;
+            _extensionsMenuButton.Tag = OpenSettingsCommandName;
+            _extensionsMenuButton.Style = MsoButtonStyle.msoButtonCaption;
+            try
+            {
+                _extensionsMenuButton.Click -= ExtensionsMenuButton_Click;
+            }
+            catch
+            {
+            }
+            _extensionsMenuButton.Click += ExtensionsMenuButton_Click;
         }
 
         private static CommandBar FindExtensionsCommandBar(CommandBars commandBars)
@@ -165,6 +272,7 @@ namespace ContextToAgent
         {
             if (string.IsNullOrWhiteSpace(caption)) return false;
             var normalized = caption.Replace("&", string.Empty).Trim().TrimEnd('.');
+            normalized = normalized.Replace(" ", string.Empty);
             return string.Equals(normalized, "ContextToAgent", StringComparison.OrdinalIgnoreCase);
         }
 
@@ -177,7 +285,7 @@ namespace ContextToAgent
         private void StartStateTimer()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _stateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(750) };
+            _stateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _stateTimer.Tick += (sender, args) => _ = PushStateAsync();
             _stateTimer.Start();
         }
@@ -194,13 +302,20 @@ namespace ContextToAgent
 
         private async Task PushStateAsync()
         {
+            if (Interlocked.Exchange(ref _pushStateActive, 1) == 1) return;
             try
             {
+                if (_bridgeClient == null) return;
+                await _bridgeClient.EnsureIpcAsync().ConfigureAwait(false);
                 await JoinableTaskFactory.SwitchToMainThreadAsync();
-                await _bridgeClient.EnsureIpcAsync();
+                if (_collector == null) return;
                 await _bridgeClient.UpsertInstanceAsync(_collector.Collect());
             }
             catch { }
+            finally
+            {
+                Interlocked.Exchange(ref _pushStateActive, 0);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -214,7 +329,6 @@ namespace ContextToAgent
                     try
                     {
                         _extensionsMenuButton.Click -= ExtensionsMenuButton_Click;
-                        _extensionsMenuButton.Delete();
                     }
                     catch
                     {

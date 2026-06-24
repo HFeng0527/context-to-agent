@@ -4,36 +4,35 @@
   <Extern href="vsshlids.h" />
   <Extern href="Vs18ShellIds.h" />
   <Commands package="guidContextToAgentPackage">
-    <Menus>
-      <Menu guid="guidContextToAgentCommandSet" id="ContextToAgentMenu" priority="0x700" type="Menu">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_MM_TOOLSADDINS" />
-        <Strings>
-          <ButtonText>ContextToAgent</ButtonText>
-          <CommandName>ContextToAgent.Menu</CommandName>
-        </Strings>
-      </Menu>
-    </Menus>
     <Groups>
-      <Group guid="guidContextToAgentCommandSet" id="ContextToAgentMenuGroup" priority="0x0000">
-        <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentMenu" />
+      <Group guid="guidContextToAgentCommandSet" id="ContextToAgentExtensionsGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_EXTENSIONS" />
+      </Group>
+      <Group guid="guidContextToAgentCommandSet" id="ContextToAgentExtensionsReparentGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_EXTENSIONS_REPARENT" />
       </Group>
     </Groups>
     <Buttons>
       <Button guid="guidContextToAgentCommandSet" id="OpenSettingsCommand" priority="0x0001" type="Button">
-        <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentMenuGroup" />
+        <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentExtensionsGroup" />
         <Strings>
-          <ButtonText>Settings...</ButtonText>
+          <ButtonText>Context To Agent</ButtonText>
           <CommandName>ContextToAgent.OpenSettings</CommandName>
-          <LocCanonicalName>Extensions.ContextToAgent Settings</LocCanonicalName>
+          <LocCanonicalName>Extensions.ContextToAgent.OpenSettings</LocCanonicalName>
         </Strings>
       </Button>
     </Buttons>
   </Commands>
+  <CommandPlacements>
+    <CommandPlacement guid="guidContextToAgentCommandSet" id="OpenSettingsCommand" priority="0x0001">
+      <Parent guid="guidContextToAgentCommandSet" id="ContextToAgentExtensionsReparentGroup" />
+    </CommandPlacement>
+  </CommandPlacements>
   <Symbols>
-    <GuidSymbol name="guidContextToAgentPackage" value="{cfd2b31d-7820-4015-b91f-f1b36f6d926f}" />
-    <GuidSymbol name="guidContextToAgentCommandSet" value="{d6ccb87b-8d24-4915-8748-4464481054bc}">
-      <IDSymbol name="ContextToAgentMenu" value="0x1100" />
-      <IDSymbol name="ContextToAgentMenuGroup" value="0x1150" />
+    <GuidSymbol name="guidContextToAgentPackage" value="{066fbd03-0d37-4aa5-8530-56fcf59a0716}" />
+    <GuidSymbol name="guidContextToAgentCommandSet" value="{16ae04a6-f1aa-42cc-ab3a-ce1efb25c540}">
+      <IDSymbol name="ContextToAgentExtensionsGroup" value="0x1150" />
+      <IDSymbol name="ContextToAgentExtensionsReparentGroup" value="0x1151" />
       <IDSymbol name="OpenSettingsCommand" value="0x0100" />
     </GuidSymbol>
   </Symbols>
