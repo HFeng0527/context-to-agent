@@ -2,7 +2,9 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const SERVER_NAME = "editor-context";
+const SERVER_NAME = "editor-context-vscode";
+const LEGACY_SERVER_NAME = "editor-context";
+const SERVER_NAMES = [SERVER_NAME, LEGACY_SERVER_NAME];
 const OWNED_MARKER = "context-to-agent managed stdio";
 
 function defaultEnv(env) {
@@ -80,14 +82,14 @@ function isConfigured(agent) {
   if (!exists(agent)) return false;
   if (agent.kind === "mcp-json" || agent.kind === "claude-desktop-json") {
     const data = parseJsonFile(agent.configPath);
-    return Boolean(data.mcpServers && data.mcpServers[SERVER_NAME]);
+    return Boolean(data.mcpServers && SERVER_NAMES.some((serverName) => data.mcpServers[serverName]));
   }
   if (agent.kind === "opencode-json") {
     const data = parseJsonFile(agent.configPath);
-    return Boolean(data.mcp && data.mcp[SERVER_NAME]);
+    return Boolean(data.mcp && SERVER_NAMES.some((serverName) => data.mcp[serverName]));
   }
   const text = fs.readFileSync(agent.configPath, "utf8");
-  return text.includes(SERVER_NAME) && text.includes(OWNED_MARKER);
+  return SERVER_NAMES.some((serverName) => text.includes(serverName)) && text.includes(OWNED_MARKER);
 }
 
 function configureAgent(agent) {
@@ -115,6 +117,7 @@ function ensureParent(file) {
 function upsertMcpJsonAgentConfig(agent) {
   const data = parseJsonFile(agent.configPath);
   data.mcpServers = data.mcpServers || {};
+  delete data.mcpServers[LEGACY_SERVER_NAME];
   data.mcpServers[SERVER_NAME] = stdioJsonConfig(agent);
   writeJson(agent.configPath, data);
 }
@@ -122,6 +125,7 @@ function upsertMcpJsonAgentConfig(agent) {
 function upsertOpenCodeAgentConfig(agent) {
   const data = parseJsonFile(agent.configPath);
   data.mcp = data.mcp || {};
+  delete data.mcp[LEGACY_SERVER_NAME];
   data.mcp[SERVER_NAME] = {
     type: "local",
     command: [agent.command, ...(agent.args || [])],
@@ -142,13 +146,13 @@ function stdioJsonConfig(agent) {
 
 function removeJsonMcpServer(file) {
   const data = parseJsonFile(file);
-  if (data.mcpServers) delete data.mcpServers[SERVER_NAME];
+  if (data.mcpServers) for (const serverName of SERVER_NAMES) delete data.mcpServers[serverName];
   writeJson(file, data);
 }
 
 function removeOpenCodeServer(file) {
   const data = parseJsonFile(file);
-  if (data.mcp) delete data.mcp[SERVER_NAME];
+  if (data.mcp) for (const serverName of SERVER_NAMES) delete data.mcp[serverName];
   writeJson(file, data);
 }
 
@@ -174,15 +178,19 @@ function removeCodexTomlBlock(text) {
   const output = [];
   let skipping = false;
   for (const line of lines) {
+    const trimmed = line.trim();
     if (line.trim() === `# ${OWNED_MARKER}`) {
       skipping = true;
       continue;
     }
+    if (SERVER_NAMES.some((serverName) => trimmed === `[mcp_servers.${serverName}]` || trimmed.startsWith(`[mcp_servers.${serverName}.`))) {
+      skipping = true;
+      continue;
+    }
     if (skipping && /^\s*\[/.test(line)) {
-      if (line.trim() === `[mcp_servers.${SERVER_NAME}]` || line.trim().startsWith(`[mcp_servers.${SERVER_NAME}.`)) continue;
       skipping = false;
     }
-    if (!skipping && line.trim() !== `[mcp_servers.${SERVER_NAME}]` && !line.trim().startsWith(`[mcp_servers.${SERVER_NAME}.`)) output.push(line);
+    if (!skipping) output.push(line);
   }
   return output.join("\n");
 }
@@ -201,6 +209,7 @@ function escapeToml(value) {
 
 module.exports = {
   SERVER_NAME,
+  LEGACY_SERVER_NAME,
   OWNED_MARKER,
   agentDefinitions,
   exists,

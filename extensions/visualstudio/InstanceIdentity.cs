@@ -9,7 +9,7 @@ namespace ContextToAgent
         {
             var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ContextToAgent");
             Directory.CreateDirectory(directory);
-            var file = Path.Combine(directory, "visualstudio-instance-id.txt");
+            var file = Path.Combine(directory, "visualstudio-bridge-instance-id.txt");
             if (File.Exists(file))
             {
                 var existing = File.ReadAllText(file).Trim();

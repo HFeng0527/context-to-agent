@@ -4,7 +4,7 @@ const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 
-const SERVER_NAME = "editor-context";
+const SERVER_NAME = "editor-context-vscode";
 const REQUEST_TIMEOUT_MS = 5000;
 const CLIENT_NAME = cliValue("--client-name") || process.env.EDITOR_CONTEXT_BRIDGE_CLIENT_NAME || "MCP client";
 

@@ -1,3 +1,3 @@
-[mcp_servers.editor-context]
+[mcp_servers.editor-context-vscode]
 command = "/path/to/vscode-runtime"
 args = ["/path/to/stdioAdapter.js"]

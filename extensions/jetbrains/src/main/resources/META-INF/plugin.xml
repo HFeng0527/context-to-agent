@@ -1,0 +1,27 @@
+<idea-plugin>
+  <id>local.context-to-agent.jetbrains</id>
+  <name>ContextToAgent</name>
+  <vendor>local</vendor>
+
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.contexttoagent.jetbrains.ContextToAgentService"/>
+    <postStartupActivity implementation="com.contexttoagent.jetbrains.ContextToAgentStartupActivity"/>
+    <applicationConfigurable
+      id="contextToAgent"
+      parentId="tools"
+      displayName="ContextToAgent"
+      instance="com.contexttoagent.jetbrains.ContextToAgentConfigurable"/>
+  </extensions>
+
+  <actions>
+    <action
+      id="ContextToAgent.OpenSettings"
+      class="com.contexttoagent.jetbrains.OpenSettingsAction"
+      text="ContextToAgent Settings..."
+      description="Open ContextToAgent settings">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>

@@ -13,13 +13,15 @@ namespace ContextToAgent
 {
     internal sealed class BridgeClient : IDisposable
     {
-        private const string ServerName = "editor-context";
+        private const string ServerName = "editor-context-visualstudio";
         private readonly string _instanceId;
         private readonly string _pipeName;
+        private readonly object _syncRoot = new object();
         private readonly List<ReadRecordPayload> _recentReads = new List<ReadRecordPayload>();
         private EditorInstanceUpdate _latest;
         private bool _listening;
         private CancellationTokenSource _cts;
+        private Task _listenTask;
 
         public BridgeClient(string instanceId)
         {
@@ -31,13 +33,24 @@ namespace ContextToAgent
         public string AdapterScriptPath => Path.Combine(Path.GetDirectoryName(typeof(BridgeClient).Assembly.Location), "stdioAdapter.ps1");
         public string ProjectRoot => _latest?.ActiveWorkspaceRoot ?? _latest?.WorkspaceRoots?.FirstOrDefault();
 
-        public async Task EnsureIpcAsync()
+        public Task EnsureIpcAsync()
         {
-            if (_listening) return;
-            _cts = new CancellationTokenSource();
-            _listening = true;
-            _ = Task.Run(() => ListenAsync(_cts.Token));
-            await Task.Yield();
+            lock (_syncRoot)
+            {
+                if (_listenTask != null && !_listenTask.IsCompleted)
+                {
+                    _listening = true;
+                    return Task.CompletedTask;
+                }
+
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = new CancellationTokenSource();
+                _listening = true;
+                _listenTask = Task.Run(() => ListenAsync(_cts.Token));
+            }
+
+            return Task.CompletedTask;
         }
 
         public async Task UpsertInstanceAsync(EditorInstanceUpdate update)
@@ -54,13 +67,22 @@ namespace ContextToAgent
         public async Task<bool> IsIpcHealthyAsync()
         {
             await Task.Yield();
-            return _listening;
+            lock (_syncRoot)
+            {
+                return _listening && _listenTask != null && !_listenTask.IsCompleted;
+            }
         }
 
         public async Task<IpcStatusPayload> StatusAsync()
         {
             await EnsureIpcAsync();
-            return new IpcStatusPayload { PipeName = PipeName, AdapterScriptPath = AdapterScriptPath, RecentReads = _recentReads.ToList() };
+            List<ReadRecordPayload> recentReads;
+            lock (_syncRoot)
+            {
+                recentReads = _recentReads.ToList();
+            }
+
+            return new IpcStatusPayload { PipeName = PipeName, AdapterScriptPath = AdapterScriptPath, RecentReads = recentReads };
         }
 
         private async Task ListenAsync(CancellationToken token)
@@ -79,7 +101,13 @@ namespace ContextToAgent
                 catch
                 {
                     pipe?.Dispose();
-                    if (!token.IsCancellationRequested) _listening = false;
+                    if (!token.IsCancellationRequested)
+                    {
+                        lock (_syncRoot)
+                        {
+                            _listening = false;
+                        }
+                    }
                     break;
                 }
             }
@@ -119,7 +147,7 @@ namespace ContextToAgent
             var id = message["id"];
             var method = (string)message["method"];
             if (id == null) return null;
-            if (method == "initialize") return RpcResult(id, new { protocolVersion = "2025-06-18", capabilities = new { tools = new { } }, serverInfo = new { name = ServerName, version = "0.1.0" } });
+            if (method == "initialize") return RpcResult(id, new { protocolVersion = "2025-06-18", capabilities = new { tools = new { } }, serverInfo = new { name = ServerName, version = "0.1.15" } });
             if (method == "ping") return RpcResult(id, new { });
             if (method == "tools/list") return RpcResult(id, new { tools = ToolDefinitions() });
             if (method == "tools/call")
@@ -174,20 +202,23 @@ namespace ContextToAgent
         private void RecordCall(string clientName, string toolName, string connectionId)
         {
             var latest = _latest ?? new EditorInstanceUpdate { Source = "visual_studio", DisplayName = "Visual Studio", WorkspaceRoots = new List<string>(), Errors = new List<DiagnosticErrorPayload>(), LastActiveAt = DateTimeOffset.UtcNow };
-            _recentReads.Add(new ReadRecordPayload
+            lock (_syncRoot)
             {
-                ClientName = string.IsNullOrWhiteSpace(clientName) ? "mcp-client" : clientName,
-                ToolName = toolName,
-                ConnectionId = connectionId,
-                InstanceId = _instanceId,
-                ActiveFile = latest.ActiveFile,
-                ActiveWorkspaceRoot = latest.ActiveWorkspaceRoot,
-                SelectionEmpty = latest.Selection?.IsEmpty,
-                SelectionLength = latest.Selection?.Text?.Length ?? 0,
-                ErrorCount = latest.Errors?.Count ?? 0,
-                ReadAt = DateTimeOffset.UtcNow
-            });
-            while (_recentReads.Count > 50) _recentReads.RemoveAt(0);
+                _recentReads.Add(new ReadRecordPayload
+                {
+                    ClientName = string.IsNullOrWhiteSpace(clientName) ? "mcp-client" : clientName,
+                    ToolName = toolName,
+                    ConnectionId = connectionId,
+                    InstanceId = _instanceId,
+                    ActiveFile = latest.ActiveFile,
+                    ActiveWorkspaceRoot = latest.ActiveWorkspaceRoot,
+                    SelectionEmpty = latest.Selection?.IsEmpty,
+                    SelectionLength = latest.Selection?.Text?.Length ?? 0,
+                    ErrorCount = latest.Errors?.Count ?? 0,
+                    ReadAt = DateTimeOffset.UtcNow
+                });
+                while (_recentReads.Count > 50) _recentReads.RemoveAt(0);
+            }
         }
 
         private object InstanceSummary()
@@ -219,8 +250,14 @@ namespace ContextToAgent
 
         public void Dispose()
         {
-            _cts?.Cancel();
-            _listening = false;
+            lock (_syncRoot)
+            {
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = null;
+                _listening = false;
+                _listenTask = null;
+            }
         }
     }
 }

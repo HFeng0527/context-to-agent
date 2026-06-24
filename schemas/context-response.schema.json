@@ -24,7 +24,7 @@
       "additionalProperties": false,
       "properties": {
         "instanceId": { "type": "string" },
-        "source": { "enum": ["vscode", "visual_studio"] },
+        "source": { "enum": ["vscode", "visual_studio", "jetbrains"] },
         "displayName": { "type": "string" },
         "workspaceRoots": { "type": "array", "items": { "type": "string" } },
         "activeWorkspaceRoot": { "type": "string" },

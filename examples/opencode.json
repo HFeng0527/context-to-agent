@@ -1,6 +1,6 @@
 {
   "mcp": {
-    "editor-context": {
+    "editor-context-vscode": {
       "type": "local",
       "command": ["/path/to/vscode-runtime", "/path/to/stdioAdapter.js"],
       "enabled": true

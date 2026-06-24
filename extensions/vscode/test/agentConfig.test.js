@@ -3,6 +3,8 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const agentConfig = require("../out/agentConfig");
+const SERVER_NAME = "editor-context-vscode";
+const LEGACY_SERVER_NAME = "editor-context";
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "context-to-agent-test-"));
@@ -25,15 +27,16 @@ function testMcpJsonConfigureAndRevoke() {
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
   assert.strictEqual(configured.mcpServers.existing.command, "existing-tool");
-  assert.strictEqual(configured.mcpServers["editor-context"].type, "stdio");
-  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/context-to-agent-stdio");
-  assert.deepStrictEqual(configured.mcpServers["editor-context"].args, ["adapter.js", "--client-name", "Test Agent"]);
-  assert.strictEqual(configured.mcpServers["editor-context"].env.ELECTRON_RUN_AS_NODE, "1");
+  assert.strictEqual(configured.mcpServers[SERVER_NAME].type, "stdio");
+  assert.strictEqual(configured.mcpServers[SERVER_NAME].command, "/bin/context-to-agent-stdio");
+  assert.deepStrictEqual(configured.mcpServers[SERVER_NAME].args, ["adapter.js", "--client-name", "Test Agent"]);
+  assert.strictEqual(configured.mcpServers[SERVER_NAME].env.ELECTRON_RUN_AS_NODE, "1");
   assert(!fs.existsSync(`${file}.2026-06-20T00-00-00-000Z.bak`));
 
   agentConfig.revokeAgent(agent, fixedDate());
   const revoked = JSON.parse(read(file));
-  assert(!revoked.mcpServers["editor-context"]);
+  assert(!revoked.mcpServers[SERVER_NAME]);
+  assert(!revoked.mcpServers[LEGACY_SERVER_NAME]);
   assert.strictEqual(revoked.mcpServers.existing.command, "existing-tool");
 }
 
@@ -44,7 +47,7 @@ function testClaudeDesktopConfigureAndRevoke() {
     preferences: {
       theme: "dark",
       mcpServers: {
-        "editor-context": { type: "streamable-http", url: "http://127.0.0.1:37373/mcp" }
+        [LEGACY_SERVER_NAME]: { type: "streamable-http", url: "http://127.0.0.1:37373/mcp" }
       }
     },
     mcpServers: { existing: { command: "existing-tool" } }
@@ -54,15 +57,17 @@ function testClaudeDesktopConfigureAndRevoke() {
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
   assert.strictEqual(configured.preferences.theme, "dark");
-  assert.strictEqual(configured.preferences.mcpServers["editor-context"].type, "streamable-http");
+  assert.strictEqual(configured.preferences.mcpServers[LEGACY_SERVER_NAME].type, "streamable-http");
   assert.strictEqual(configured.mcpServers.existing.command, "existing-tool");
-  assert(!("type" in configured.mcpServers["editor-context"]));
-  assert.strictEqual(configured.mcpServers["editor-context"].command, "/bin/context-to-agent-stdio");
-  assert.deepStrictEqual(configured.mcpServers["editor-context"].args, ["adapter.js", "--client-name", "Claude Desktop"]);
+  assert(!("type" in configured.mcpServers[SERVER_NAME]));
+  assert.strictEqual(configured.mcpServers[SERVER_NAME].command, "/bin/context-to-agent-stdio");
+  assert.deepStrictEqual(configured.mcpServers[SERVER_NAME].args, ["adapter.js", "--client-name", "Claude Desktop"]);
+  assert(!configured.mcpServers[LEGACY_SERVER_NAME]);
 
   agentConfig.revokeAgent(agent, fixedDate());
   const revoked = JSON.parse(read(file));
-  assert(!revoked.mcpServers["editor-context"]);
+  assert(!revoked.mcpServers[SERVER_NAME]);
+  assert(!revoked.mcpServers[LEGACY_SERVER_NAME]);
   assert.strictEqual(revoked.mcpServers.existing.command, "existing-tool");
 }
 
@@ -75,13 +80,14 @@ function testOpenCodeConfigureAndRevoke() {
   agentConfig.configureAgent(agent, fixedDate());
   const configured = JSON.parse(read(file));
   assert.strictEqual(configured.mcp.existing.type, "local");
-  assert.strictEqual(configured.mcp["editor-context"].type, "local");
-  assert.deepStrictEqual(configured.mcp["editor-context"].command, ["/bin/context-to-agent-stdio", "adapter.js", "--client-name", "OpenCode"]);
-  assert.strictEqual(configured.mcp["editor-context"].enabled, true);
+  assert.strictEqual(configured.mcp[SERVER_NAME].type, "local");
+  assert.deepStrictEqual(configured.mcp[SERVER_NAME].command, ["/bin/context-to-agent-stdio", "adapter.js", "--client-name", "OpenCode"]);
+  assert.strictEqual(configured.mcp[SERVER_NAME].enabled, true);
 
   agentConfig.revokeAgent(agent, fixedDate());
   const revoked = JSON.parse(read(file));
-  assert(!revoked.mcp["editor-context"]);
+  assert(!revoked.mcp[SERVER_NAME]);
+  assert(!revoked.mcp[LEGACY_SERVER_NAME]);
   assert.strictEqual(revoked.mcp.existing.type, "local");
 }
 
@@ -108,18 +114,20 @@ function testCodexTomlConfigureAndRevoke() {
   const configured = read(file);
   assert(configured.includes("[mcp_servers.keep]"));
   assert(configured.includes("[theme]"));
-  assert(configured.includes("[mcp_servers.editor-context]"));
+  assert(configured.includes(`[mcp_servers.${SERVER_NAME}]`));
   assert(configured.includes('command = "/bin/context-to-agent-stdio"'));
   assert(configured.includes('args = ["adapter.js", "--client-name", "Codex"]'));
-  assert(configured.includes("[mcp_servers.editor-context.env]"));
+  assert(configured.includes(`[mcp_servers.${SERVER_NAME}.env]`));
+  assert(!configured.includes(`[mcp_servers.${LEGACY_SERVER_NAME}]`));
   assert(!configured.includes("/old/adapter"));
 
   agentConfig.revokeAgent(agent, fixedDate());
   const revoked = read(file);
   assert(revoked.includes("[mcp_servers.keep]"));
   assert(revoked.includes("[theme]"));
-  assert(!revoked.includes("[mcp_servers.editor-context]"));
-  assert(!revoked.includes("[mcp_servers.editor-context.env]"));
+  assert(!revoked.includes(`[mcp_servers.${SERVER_NAME}]`));
+  assert(!revoked.includes(`[mcp_servers.${SERVER_NAME}.env]`));
+  assert(!revoked.includes(`[mcp_servers.${LEGACY_SERVER_NAME}]`));
 }
 
 function testAgentDefinitionsUseStdio() {

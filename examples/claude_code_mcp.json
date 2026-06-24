@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "editor-context": {
+    "editor-context-vscode": {
       "type": "stdio",
       "command": "/path/to/vscode-runtime",
       "args": ["/path/to/stdioAdapter.js"]

@@ -10,7 +10,8 @@ namespace ContextToAgent
 {
     internal sealed class AgentConfigService
     {
-        private const string ServerName = "editor-context";
+        private const string ServerName = "editor-context-visualstudio";
+        private const string LegacyServerName = "editor-context";
         private const string OwnedMarker = "context-to-agent managed stdio";
         private const string SettingsFileName = "agent-paths.json";
 
@@ -117,6 +118,24 @@ namespace ContextToAgent
             if (agent.Kind == "mcp-json" || agent.Kind == "claude-desktop-json") UpsertMcpJson(agent);
         }
 
+        public void RefreshConfiguredAgents(BridgeClient bridgeClient)
+        {
+            foreach (var agent in Agents(bridgeClient).Where(candidate => !string.IsNullOrWhiteSpace(candidate.ConfigPath)))
+            {
+                try
+                {
+                    if (!IsConfigured(agent)) continue;
+                    EnsureParent(agent.ConfigPath);
+                    if (agent.Kind == "opencode-json") UpsertOpenCodeJson(agent);
+                    if (agent.Kind == "codex-toml") UpsertCodexToml(agent);
+                    if (agent.Kind == "mcp-json" || agent.Kind == "claude-desktop-json") UpsertMcpJson(agent);
+                }
+                catch
+                {
+                }
+            }
+        }
+
         public void RevokeAll(BridgeClient bridgeClient)
         {
             foreach (var agent in Agents(bridgeClient).Where(candidate => !string.IsNullOrWhiteSpace(candidate.ConfigPath)))
@@ -159,7 +178,7 @@ namespace ContextToAgent
                 return string.Join(Environment.NewLine + Environment.NewLine, new[]
                 {
                     "配置其他 Agent",
-                    "1. 添加一个名为 editor-context 的 MCP server。",
+                    "1. 添加一个名为 " + ServerName + " 的 MCP server。",
                     "2. 使用 stdio 传输。",
                     "3. 使用下面 JSON 里的 command 和 args。",
                     "4. 将 Your Agent Name 替换为你希望在读取记录里看到的 Agent 名称。",
@@ -169,7 +188,7 @@ namespace ContextToAgent
                     "- Agent 使用该 MCP server 时需要保持 Visual Studio 打开。",
                     "- 如果 Agent 支持 command/args 分离配置，请保持 command 和 args 分开。",
                     "- Visual Studio 桥接使用 PowerShell adapter，不要添加 ELECTRON_RUN_AS_NODE。",
-                    "- 如果 Agent 需要 env，JSON 配置通常使用 env 对象，Codex TOML 使用 [mcp_servers.editor-context.env]。env 要和 args 分开。",
+                    "- 如果 Agent 需要 env，JSON 配置通常使用 env 对象，Codex TOML 使用 [mcp_servers." + ServerName + ".env]。env 要和 args 分开。",
                     "- 有些 Agent 要求 type = stdio，Claude Desktop 的 stdio 项通常不写 type。若客户端拒绝配置，请检查它的 MCP schema。",
                     "- 如果 Agent 把 command 和 args 存成单个 shell 字符串，路径里有空格时要加引号。",
                     genericJson
@@ -179,7 +198,7 @@ namespace ContextToAgent
             return string.Join(Environment.NewLine + Environment.NewLine, new[]
             {
                 "Configure other agents",
-                "1. Add a new MCP server named editor-context.",
+                "1. Add a new MCP server named " + ServerName + ".",
                 "2. Use stdio transport.",
                 "3. Use the command and args from the JSON below.",
                 "4. Replace Your Agent Name with the agent name you want to see in call records.",
@@ -189,7 +208,7 @@ namespace ContextToAgent
                 "- Keep Visual Studio open while the agent uses this MCP server.",
                 "- Keep command and args separate when the agent supports that shape.",
                 "- Do not add ELECTRON_RUN_AS_NODE for this Visual Studio bridge; it uses the bundled PowerShell adapter, not VS Code/Electron.",
-                "- If an agent requires env values, JSON configs usually use an env object, while Codex TOML uses [mcp_servers.editor-context.env]. Keep env separate from args.",
+                "- If an agent requires env values, JSON configs usually use an env object, while Codex TOML uses [mcp_servers." + ServerName + ".env]. Keep env separate from args.",
                 "- Some agents require type = stdio, while Claude Desktop stdio entries omit type. If a client rejects the config, check its expected MCP schema.",
                 "- Quote paths if an agent stores command and args as one shell string.",
                 genericJson
@@ -323,15 +342,20 @@ namespace ContextToAgent
             if (agent.Kind == "mcp-json" || agent.Kind == "claude-desktop-json")
             {
                 var json = ParseJson(agent.ConfigPath);
-                return json["mcpServers"] is JObject mcpServers && mcpServers[ServerName] != null;
+                return json["mcpServers"] is JObject mcpServers && HasManagedServer(mcpServers);
             }
             if (agent.Kind == "opencode-json")
             {
                 var json = ParseJson(agent.ConfigPath);
-                return json["mcp"] is JObject openCodeServers && openCodeServers[ServerName] != null;
+                return json["mcp"] is JObject openCodeServers && HasManagedServer(openCodeServers);
             }
             var text = File.ReadAllText(agent.ConfigPath);
-            return text.Contains(ServerName) && text.Contains(OwnedMarker);
+            return (text.Contains(ServerName) || text.Contains(LegacyServerName)) && text.Contains(OwnedMarker);
+        }
+
+        private static bool HasManagedServer(JObject servers)
+        {
+            return servers[ServerName] != null || servers[LegacyServerName] != null;
         }
 
         private static void EnsureParent(string file)
@@ -344,6 +368,7 @@ namespace ContextToAgent
         {
             var json = ParseJson(agent.ConfigPath);
             var servers = json["mcp"] as JObject ?? new JObject();
+            servers.Remove(LegacyServerName);
             servers[ServerName] = new JObject
             {
                 ["type"] = "local",
@@ -358,6 +383,7 @@ namespace ContextToAgent
         {
             var json = ParseJson(agent.ConfigPath);
             var servers = json["mcpServers"] as JObject ?? new JObject();
+            servers.Remove(LegacyServerName);
             var config = new JObject
             {
                 ["command"] = agent.Command,
@@ -372,14 +398,22 @@ namespace ContextToAgent
         private static void RemoveOpenCodeJson(string file)
         {
             var json = ParseJson(file);
-            if (json["mcp"] is JObject servers) servers.Remove(ServerName);
+            if (json["mcp"] is JObject servers)
+            {
+                servers.Remove(ServerName);
+                servers.Remove(LegacyServerName);
+            }
             WriteJson(file, json);
         }
 
         private static void RemoveMcpJson(string file)
         {
             var json = ParseJson(file);
-            if (json["mcpServers"] is JObject servers) servers.Remove(ServerName);
+            if (json["mcpServers"] is JObject servers)
+            {
+                servers.Remove(ServerName);
+                servers.Remove(LegacyServerName);
+            }
             WriteJson(file, json);
         }
 
@@ -403,19 +437,32 @@ namespace ContextToAgent
             var skipping = false;
             foreach (var line in text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
             {
-                if (line.Trim() == "# " + OwnedMarker)
+                var trimmed = line.Trim();
+                if (trimmed == "# " + OwnedMarker)
                 {
                     skipping = true;
                     continue;
                 }
-                if (skipping && line.TrimStart().StartsWith("["))
+                if (IsManagedTomlSection(trimmed))
                 {
-                    if (line.Trim() == "[mcp_servers." + ServerName + "]" || line.Trim().StartsWith("[mcp_servers." + ServerName + ".")) continue;
+                    skipping = true;
+                    continue;
+                }
+                if (skipping && trimmed.StartsWith("["))
+                {
                     skipping = false;
                 }
-                if (!skipping && line.Trim() != "[mcp_servers." + ServerName + "]" && !line.Trim().StartsWith("[mcp_servers." + ServerName + ".")) output.Add(line);
+                if (!skipping) output.Add(line);
             }
             return string.Join(Environment.NewLine, output);
+        }
+
+        private static bool IsManagedTomlSection(string trimmed)
+        {
+            return trimmed == "[mcp_servers." + ServerName + "]" ||
+                trimmed.StartsWith("[mcp_servers." + ServerName + ".") ||
+                trimmed == "[mcp_servers." + LegacyServerName + "]" ||
+                trimmed.StartsWith("[mcp_servers." + LegacyServerName + ".");
         }
 
         private static JObject ParseJson(string file) => JObject.Parse(File.Exists(file) ? File.ReadAllText(file) : "{}");

@@ -6,7 +6,7 @@ const path = require("path");
 const crypto = require("crypto");
 const agentConfig = require("./agentConfig");
 
-const SERVER_NAME = "editor-context";
+const SERVER_NAME = "editor-context-vscode";
 const SETTINGS_FILTER = "@ext:local.context-to-agent";
 const LANGUAGE_SETTING = "language";
 
@@ -126,7 +126,7 @@ function handleJsonRpc(message, request) {
         return rpcResult(message.id, {
           protocolVersion: "2025-06-18",
           capabilities: { tools: {} },
-          serverInfo: { name: SERVER_NAME, version: "0.1.0" }
+          serverInfo: { name: SERVER_NAME, version: "0.1.15" }
         });
       case "ping":
         return rpcResult(message.id, {});
@@ -872,7 +872,7 @@ function dashboardHtml(model) {
 
 function otherAgentSetupHtml(snippets, t) {
   return `<ol class="other-agents-list">
-    <li>${escapeHtml(t.otherAgentsStepName)} <code>editor-context</code></li>
+    <li>${escapeHtml(t.otherAgentsStepName)} <code>${escapeHtml(SERVER_NAME)}</code></li>
     <li>${escapeHtml(t.otherAgentsStepTransport)} <code>stdio</code></li>
     <li>${escapeHtml(t.otherAgentsStepCommand)} <code>${escapeHtml(snippets.command)}</code></li>
     <li>${escapeHtml(t.otherAgentsStepArgs)} <code>--client-name "Your Agent Name"</code></li>
@@ -990,7 +990,7 @@ const UI_STRINGS = {
     pitfallKeepEditorOpen: "Keep VS Code open while the agent uses the MCP server.",
     pitfallLauncher: "Use the generated launcher command, not stdioAdapter.js directly.",
     pitfallElectronEnv: "Do not add ELECTRON_RUN_AS_NODE when using this launcher; it is already set inside the launcher. Only set it yourself if you bypass the launcher and run VS Code/Electron directly.",
-    pitfallEnvShape: "If an agent requires env values, JSON configs usually use an env object, while Codex TOML uses [mcp_servers.editor-context.env]. Keep env separate from args.",
+    pitfallEnvShape: `If an agent requires env values, JSON configs usually use an env object, while Codex TOML uses [mcp_servers.${SERVER_NAME}.env]. Keep env separate from args.`,
     pitfallTypeField: "Some agents require type = stdio, while Claude Desktop stdio entries omit type. If a client rejects the config, check its expected MCP schema.",
     pitfallSpaces: "If an agent stores command and args as one shell string, quote paths with spaces.",
     copyGenericJson: "Copy generic MCP JSON",
@@ -1000,7 +1000,7 @@ const UI_STRINGS = {
     remove: "Remove",
     restart: "Restart",
     revoke: "Revoke",
-    revokePrompt: "Remove editor-context from this config?",
+    revokePrompt: `Remove ${SERVER_NAME} from this config?`,
     running: "Running",
     settings: "Settings",
     selection: "Selection",
@@ -1044,7 +1044,7 @@ const UI_STRINGS = {
     pitfallKeepEditorOpen: "Agent 使用 MCP 时需要保持 VS Code 打开。",
     pitfallLauncher: "使用生成的 launcher 命令，不要直接运行 stdioAdapter.js。",
     pitfallElectronEnv: "使用这个 launcher 时不要额外添加 ELECTRON_RUN_AS_NODE；launcher 内部已经设置好了。只有绕过 launcher、直接运行 VS Code/Electron 时才需要自己设置。",
-    pitfallEnvShape: "如果某个 Agent 要求写 env，JSON 配置通常用 env 对象，Codex TOML 使用 [mcp_servers.editor-context.env]。env 要和 args 分开写。",
+    pitfallEnvShape: `如果某个 Agent 要求写 env，JSON 配置通常用 env 对象，Codex TOML 使用 [mcp_servers.${SERVER_NAME}.env]。env 要和 args 分开写。`,
     pitfallTypeField: "有些 Agent 需要 type = stdio，但 Claude Desktop 的 stdio 配置通常不写 type。如果客户端拒绝配置，要对照它自己的 MCP schema。",
     pitfallSpaces: "如果某个 Agent 用单个 shell 字符串保存命令，路径里有空格时需要加引号。",
     copyGenericJson: "复制通用 MCP JSON",
@@ -1054,7 +1054,7 @@ const UI_STRINGS = {
     remove: "移除",
     restart: "重启",
     revoke: "撤销",
-    revokePrompt: "从此配置中移除 editor-context？",
+    revokePrompt: `从此配置中移除 ${SERVER_NAME}？`,
     running: "运行中",
     settings: "设置",
     selection: "选区",
