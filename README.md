@@ -232,4 +232,4 @@ ContextToAgent is licensed under the Apache License 2.0.
 
 
 
-Finally, thanks to the open-source environment provided by the LinuxDo community!!!
+Finally, thanks to the open-source environment provided by the LinuxDo（https://linux.do/） community!!!
