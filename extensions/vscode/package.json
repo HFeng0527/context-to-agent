@@ -2,8 +2,10 @@
   "name": "context-to-agent",
   "displayName": "ContextToAgent",
   "description": "ContextToAgent - a lightweight MCP bridge that shares the current editor context with desktop agents. (Chinese: 将当前编辑器上下文以 MCP 方式共享给桌面 Agent 的轻量级桥接工具。)",
-  "version": "0.1.0",
+  "version": "0.1.15",
   "publisher": "local",
+  "license": "Apache-2.0",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.90.0"
   },

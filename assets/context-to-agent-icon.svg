@@ -1,0 +1,55 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">ContextToAgent icon</title>
+  <desc id="desc">A code editor panel connected through a bridge line to an agent node.</desc>
+  <defs>
+    <linearGradient id="bg" x1="32" y1="24" x2="224" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#162033"/>
+      <stop offset="0.55" stop-color="#0F1724"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="54" y1="62" x2="142" y2="170" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A3448"/>
+      <stop offset="1" stop-color="#182233"/>
+    </linearGradient>
+    <linearGradient id="agent" x1="154" y1="72" x2="211" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35D5C8"/>
+      <stop offset="1" stop-color="#1B8EEA"/>
+    </linearGradient>
+    <filter id="softShadow" x="16" y="18" width="224" height="224" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="18" y="18" width="220" height="220" rx="50" fill="url(#bg)"/>
+  <rect x="18.75" y="18.75" width="218.5" height="218.5" rx="49.25" stroke="#324154" stroke-opacity="0.72" stroke-width="1.5"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="48" y="57" width="104" height="126" rx="20" fill="url(#panel)"/>
+    <rect x="49.25" y="58.25" width="101.5" height="123.5" rx="18.75" stroke="#4B5A70" stroke-opacity="0.7" stroke-width="2.5"/>
+    <rect x="48" y="57" width="104" height="31" rx="20" fill="#263145"/>
+    <path d="M48 78C48 66.402 57.402 57 69 57H131C142.598 57 152 66.402 152 78V88H48V78Z" fill="#263145"/>
+    <circle cx="70" cy="73" r="4.5" fill="#F9736A"/>
+    <circle cx="86" cy="73" r="4.5" fill="#F2C14E"/>
+    <circle cx="102" cy="73" r="4.5" fill="#38C172"/>
+
+    <path d="M70 113L86 100L91 106L80 115L91 124L86 130L70 117V113Z" fill="#7DD3FC"/>
+    <path d="M130 113L114 100L109 106L120 115L109 124L114 130L130 117V113Z" fill="#7DD3FC"/>
+    <path d="M97 138L111 94" stroke="#F9FAFB" stroke-width="7" stroke-linecap="round"/>
+
+    <rect x="70" y="151" width="49" height="7" rx="3.5" fill="#F9FAFB" fill-opacity="0.82"/>
+    <rect x="70" y="164" width="34" height="7" rx="3.5" fill="#38D9C8" fill-opacity="0.9"/>
+  </g>
+
+  <path d="M139 122H169" stroke="#8BE9E1" stroke-width="10" stroke-linecap="round"/>
+  <path d="M139 122H169" stroke="#102033" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+
+  <g filter="url(#softShadow)">
+    <circle cx="186" cy="122" r="43" fill="url(#agent)"/>
+    <circle cx="186" cy="122" r="38.5" stroke="#C8FFF8" stroke-opacity="0.48" stroke-width="3"/>
+    <path d="M186 93L211 107.5V136.5L186 151L161 136.5V107.5L186 93Z" fill="#082033" fill-opacity="0.16"/>
+    <path d="M186 93L211 107.5V136.5L186 151L161 136.5V107.5L186 93Z" stroke="#082033" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M172 122H200" stroke="#F9FAFB" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="186" cy="122" r="9" fill="#F2C14E"/>
+  </g>
+
+</svg>

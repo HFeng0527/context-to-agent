@@ -1,8 +1,9 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="ContextToAgent" Version="0.1.9" Language="en-US" Publisher="local" />
+    <Identity Id="ContextToAgent.VisualStudio" Version="0.1.15" Language="en-US" Publisher="local" />
     <DisplayName>ContextToAgent</DisplayName>
     <Description xml:space="preserve">Lightweight MCP editor context bridge for Visual Studio 2022 and Visual Studio 2026 preview.</Description>
+    <Icon>icon.png</Icon>
     <Tags>mcp;ai;context</Tags>
   </Metadata>
   <Installation>
@@ -20,6 +21,6 @@
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,19.0)" DisplayName="Visual Studio core editor" />
   </Prerequisites>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="ContextToAgent.dll" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="ContextToAgent.VisualStudio.dll" />
   </Assets>
 </PackageManifest>
